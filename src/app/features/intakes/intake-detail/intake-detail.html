@@ -1,0 +1,23 @@
+<section class="card">
+  <a routerLink="/intakes" class="back">← All questions</a>
+
+  @if (loading()) {
+    <p>Loading…</p>
+  } @else if (errorMessage(); as message) {
+    <p class="alert" role="alert">{{ message }}</p>
+  } @else if (intake(); as intake) {
+    <h1>Question</h1>
+    <dl>
+      <dt>Status</dt>
+      <dd><span class="badge">{{ intake.status }}</span></dd>
+      <dt>Submitted</dt>
+      <dd>
+        <time [attr.datetime]="intake.submittedAt">{{ intake.submittedAt | date: 'EEEE d MMMM y, HH:mm' }}</time>
+      </dd>
+      <dt>Reference</dt>
+      <dd><code>{{ intake.id }}</code></dd>
+    </dl>
+    <h2>Description</h2>
+    <p class="description">{{ intake.description }}</p>
+  }
+</section>

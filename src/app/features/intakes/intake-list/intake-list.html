@@ -1,0 +1,35 @@
+<section class="card">
+  <header class="list-header">
+    <div>
+      <h1>Incoming questions</h1>
+      <p class="subtitle">Oldest first</p>
+    </div>
+    <button type="button" class="button secondary" (click)="load()" [disabled]="loading()">
+      {{ loading() ? 'Loading…' : 'Refresh' }}
+    </button>
+  </header>
+
+  @if (errorMessage(); as message) {
+    <p class="alert" role="alert">{{ message }}</p>
+  }
+
+  @if (!loading() || intakes().length > 0) {
+    <ul class="intakes">
+      @for (intake of intakes(); track intake.id) {
+        <li>
+          <a [routerLink]="['/intakes', intake.id]">
+            <span class="description">{{ intake.description }}</span>
+            <span class="meta">
+              <span class="badge">{{ intake.status }}</span>
+              <time [attr.datetime]="intake.submittedAt">{{ intake.submittedAt | date: 'd MMM y, HH:mm' }}</time>
+            </span>
+          </a>
+        </li>
+      } @empty {
+        @if (!errorMessage()) {
+          <li class="empty">No questions have been submitted yet.</li>
+        }
+      }
+    </ul>
+  }
+</section>

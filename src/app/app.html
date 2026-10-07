@@ -1,0 +1,13 @@
+<header class="topbar">
+  <div class="topbar-inner">
+    <a routerLink="/" class="brand">CareBridge</a>
+    <nav aria-label="Main">
+      <a routerLink="/ask" routerLinkActive="active">Ask a question</a>
+      <a routerLink="/intakes" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">Incoming questions</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <router-outlet />
+</main>

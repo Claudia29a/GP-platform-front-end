@@ -1,0 +1,55 @@
+<section class="card">
+  @if (submitted(); as intake) {
+    <div class="confirmation" role="status">
+      <h1>Your question has been sent</h1>
+      <p>The practice will review it. You do not need to call.</p>
+      <p class="reference">Reference: <code>{{ intake.id }}</code></p>
+      <div class="actions">
+        <a class="button" [routerLink]="['/intakes', intake.id]">View your question</a>
+        <button type="button" class="button secondary" (click)="startNew()">Ask another question</button>
+      </div>
+    </div>
+  } @else {
+    <h1>Ask the practice a question</h1>
+
+    <p class="notice">
+      <strong>Not for emergencies.</strong> If your complaint is urgent or life-threatening, call 112
+      or your GP practice directly.
+    </p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label for="description">Describe your complaint</label>
+      <textarea
+        id="description"
+        formControlName="description"
+        rows="7"
+        placeholder="For example: I have had an itchy rash on my arm for two weeks."
+        [attr.aria-invalid]="form.controls.description.invalid && form.controls.description.touched"
+        aria-describedby="description-hint description-error"
+      ></textarea>
+
+      <div class="field-footer">
+        <span id="description-error" class="error">
+          @if (form.controls.description.touched) {
+            @if (form.controls.description.hasError('required') || form.controls.description.hasError('blank')) {
+              Please describe your complaint.
+            } @else if (form.controls.description.hasError('maxlength')) {
+              Please keep it under {{ maxLength }} characters.
+            }
+          }
+        </span>
+        <span id="description-hint" class="counter" [class.over]="length() > maxLength">
+          {{ length() }} / {{ maxLength }}
+        </span>
+      </div>
+
+      @if (errorMessage(); as message) {
+        <p class="alert" role="alert">{{ message }}</p>
+      }
+
+      <button type="submit" class="button" [disabled]="submitting()">
+        {{ submitting() ? 'Sending…' : 'Send question' }}
+      </button>
+    </form>
+  }
+</section>
