@@ -1,0 +1,75 @@
+# Front-end pipeline (SAD v2, section 8.2).
+# Every push and pull request: test and build. Push to main: build the image, push it to GHCR and deploy to Azure.
+name: frontend
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  IMAGE: ghcr.io/claudia29a/carebridge-frontend
+  CONTAINER_APP: frontend
+  RESOURCE_GROUP: rg-carebridge
+  # Identifiers of the deploy identity, not secrets. Login works without a password via OpenID Connect.
+  AZURE_CLIENT_ID: 3897f62c-d4d1-4fbb-ade8-c6925809928e
+  AZURE_TENANT_ID: c66b6765-b794-4a2b-84ed-845b341c086a
+  AZURE_SUBSCRIPTION_ID: abe892ae-8030-495a-9ed4-6a09ed339e6a
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Test
+        run: npx ng test --watch=false
+      - name: Build
+        run: npx ng build --configuration production
+
+  deploy:
+    needs: build-and-test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ github.sha }}
+            ${{ env.IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - uses: azure/login@v3
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy to Azure Container Apps
+        run: |
+          az extension add --name containerapp --upgrade --allow-preview true --only-show-errors
+          if ! az containerapp show -n "$CONTAINER_APP" -g "$RESOURCE_GROUP" -o none 2>/dev/null; then
+            echo "::notice::Container app $CONTAINER_APP does not exist yet; image pushed, deploy skipped."
+            exit 0
+          fi
+          az containerapp update -n "$CONTAINER_APP" -g "$RESOURCE_GROUP" \
+            --image "$IMAGE:${{ github.sha }}" -o none
+          echo "Deployed $IMAGE:${{ github.sha }}"
