@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth.service';
-import { Intake } from '../../../core/models/intake.model';
+import { Intake, areaLabel, durationLabel, symptomLabels } from '../../../core/models/intake.model';
 import { httpErrorMessage } from '../../../core/services/http-error-message';
 import { IntakeService } from '../../../core/services/intake.service';
 
@@ -19,6 +19,10 @@ export class IntakeList implements OnInit {
 
   /** Staff see every question with the patient's name; a patient sees only their own. */
   protected readonly isStaff = inject(AuthService).isStaff;
+
+  protected readonly areaLabel = areaLabel;
+  protected readonly durationLabel = durationLabel;
+  protected readonly symptomLabels = symptomLabels;
 
   protected readonly intakes = signal<Intake[]>([]);
   protected readonly loading = signal(false);
