@@ -32,15 +32,23 @@ describe('auth guards', () => {
     expect(run(homeGuard)).toBe('/sign-in');
   });
 
-  it('starts patients on the question form and staff on the incoming questions', () => {
+  it('starts patients on the question form and staff on the queue', () => {
     signInAs('PATIENT');
     expect(run(homeGuard)).toBe('/ask');
 
     signInAs('GP_ASSISTANT');
-    expect(run(homeGuard)).toBe('/questions');
+    expect(run(homeGuard)).toBe('/queue');
 
     signInAs('GP');
-    expect(run(homeGuard)).toBe('/questions');
+    expect(run(homeGuard)).toBe('/queue');
+  });
+
+  it('keeps patients away from the queue', () => {
+    signInAs('PATIENT');
+    expect(run(roleGuard('GP_ASSISTANT', 'GP'))).toBe('/');
+
+    signInAs('GP_ASSISTANT');
+    expect(run(roleGuard('GP_ASSISTANT', 'GP'))).toBe(true);
   });
 
   it('keeps staff away from the patient form', () => {

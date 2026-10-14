@@ -207,3 +207,13 @@ fieldset.invalid .choice {
   font-size: 0.875rem;
   margin: 0.4rem 0 0;
 }
+
+/* Text for screen readers only. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

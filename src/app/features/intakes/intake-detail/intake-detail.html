@@ -1,5 +1,9 @@
 <section class="card">
-  <a routerLink="/questions" class="back">← {{ isStaff() ? 'All questions' : 'My questions' }}</a>
+  @if (isStaff()) {
+    <a routerLink="/queue" class="back">← Queue</a>
+  } @else {
+    <a routerLink="/questions" class="back">← My questions</a>
+  }
 
   @if (loading()) {
     <p>Loading…</p>

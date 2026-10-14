@@ -5,7 +5,8 @@
     @if (auth.user(); as user) {
       <nav aria-label="Main">
         @if (auth.isStaff()) {
-          <a routerLink="/questions" routerLinkActive="active">Incoming questions</a>
+          <a routerLink="/queue" routerLinkActive="active">Queue</a>
+          <a routerLink="/questions" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">All questions</a>
         } @else {
           <a routerLink="/ask" routerLinkActive="active">Ask a question</a>
           <a routerLink="/questions" routerLinkActive="active">My questions</a>

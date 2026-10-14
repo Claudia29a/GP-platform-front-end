@@ -18,6 +18,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/intakes/intake-form/intake-form').then((m) => m.IntakeForm),
   },
   {
+    path: 'queue',
+    title: 'Queue · CareBridge',
+    canActivate: [roleGuard('GP_ASSISTANT', 'GP')],
+    loadComponent: () => import('./features/queue/queue-list').then((m) => m.QueueList),
+  },
+  {
     path: 'questions',
     title: 'Questions · CareBridge',
     canActivate: [signedInGuard],

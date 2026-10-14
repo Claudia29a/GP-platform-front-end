@@ -1,0 +1,178 @@
+.queue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+}
+
+.updated {
+  margin-left: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.score-help {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin: 0.75rem 0 1rem;
+}
+
+.info {
+  background: var(--primary-tint);
+  border-left: 4px solid var(--navy);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+}
+
+.queue {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  &.busy {
+    opacity: 0.7;
+  }
+}
+
+.queue-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.handle {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  cursor: grab;
+  padding: 0.25rem;
+}
+
+.position {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.summary {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius);
+  padding: 0.25rem 0.5rem;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--hover);
+  }
+}
+
+.top-line {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.patient {
+  font-weight: 600;
+}
+
+.score {
+  padding: 0.05rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+
+  &.high {
+    background: var(--navy);
+    color: var(--on-navy);
+  }
+
+  &.medium {
+    background: var(--primary-soft);
+    color: var(--navy);
+  }
+
+  &.low {
+    background: var(--hover);
+    color: var(--muted);
+  }
+}
+
+.description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.9rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.arrows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.arrow {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--primary);
+  font-size: 0.7rem;
+  width: 2rem;
+  height: 1.6rem;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--primary-tint);
+  }
+
+  &:disabled {
+    color: var(--border);
+    cursor: default;
+  }
+}
+
+.empty {
+  padding: 2rem 0;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* Drag and drop (Angular CDK). */
+.cdk-drag-preview {
+  box-shadow: 0 8px 24px rgb(30 58 138 / 0.18);
+  border-radius: var(--radius);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.35;
+}
+
+.cdk-drag-animating,
+.queue.cdk-drop-list-dragging .queue-item:not(.cdk-drag-placeholder) {
+  transition: transform 200ms ease;
+}
