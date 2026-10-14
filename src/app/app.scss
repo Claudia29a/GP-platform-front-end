@@ -1,6 +1,5 @@
 .topbar {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  background: var(--navy);
 }
 
 .topbar-inner {
@@ -17,7 +16,7 @@
 .brand {
   font-weight: 700;
   font-size: 1.15rem;
-  color: var(--primary);
+  color: var(--on-navy);
   text-decoration: none;
 }
 
@@ -28,16 +27,17 @@ nav {
   a {
     padding: 0.4rem 0.75rem;
     border-radius: var(--radius);
-    color: var(--text);
+    color: var(--on-navy-muted);
     text-decoration: none;
 
     &:hover {
-      background: var(--hover);
+      background: var(--navy-hover);
+      color: var(--on-navy);
     }
 
     &.active {
-      background: var(--primary-soft);
-      color: var(--primary);
+      background: var(--primary);
+      color: var(--on-navy);
       font-weight: 600;
     }
   }

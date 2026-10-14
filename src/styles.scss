@@ -1,16 +1,26 @@
 :root {
-  --bg: #f4f6f8;
+  /* Neutrals: white surfaces on a light gray-blue page */
+  --bg: #f5f7fa;
   --surface: #ffffff;
-  --text: #1c2430;
-  --muted: #5f6b7a;
-  --border: #d8dee6;
-  --hover: #eef2f6;
-  --primary: #1f6f8b;
-  --primary-soft: #e3f1f6;
+  --text: #1e293b;
+  --muted: #5b6b7f;
+  --border: #e2e8f0;
+  --hover: #f1f5f9;
+
+  /* Blues */
+  --navy: #1e3a8a;
+  --navy-hover: #1e40af;
+  --on-navy: #ffffff;
+  --on-navy-muted: #bfdbfe;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-soft: #dbeafe;
+  --primary-tint: #eff6ff;
+
+  /* Errors stay red: people read red as "something is wrong" */
   --danger: #b42318;
   --danger-bg: #fdecea;
-  --warning: #c27c0e;
-  --warning-bg: #fff6e5;
+
   --radius: 8px;
 }
 
@@ -56,9 +66,19 @@ a {
   text-decoration: none;
   cursor: pointer;
 
+  &:hover:not(:disabled) {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+  }
+
   &.secondary {
     background: var(--surface);
     color: var(--primary);
+
+    &:hover:not(:disabled) {
+      background: var(--primary-tint);
+      color: var(--primary-hover);
+    }
   }
 
   &:disabled {
@@ -83,7 +103,7 @@ a {
   padding: 0.1rem 0.55rem;
   border-radius: 999px;
   background: var(--primary-soft);
-  color: var(--primary);
+  color: var(--navy);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.02em;
