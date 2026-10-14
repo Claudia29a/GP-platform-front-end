@@ -78,6 +78,7 @@ describe('IntakeForm', () => {
 
     expect(intakeService.submit).toHaveBeenCalledWith({ description: 'Back pain since Monday' });
     expect(element.querySelector('h1')?.textContent).toContain('Your question has been sent');
-    expect(element.textContent).toContain(savedIntake.id);
+    expect(element.querySelector('.sent-at')?.textContent).toContain('Sent on');
+    expect(element.textContent).not.toContain(savedIntake.id);
   });
 });

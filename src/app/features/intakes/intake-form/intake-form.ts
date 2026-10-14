@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
@@ -15,7 +16,7 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
 
 @Component({
   selector: 'app-intake-form',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [DatePipe, ReactiveFormsModule, RouterLink],
   templateUrl: './intake-form.html',
   styleUrl: './intake-form.scss',
 })
