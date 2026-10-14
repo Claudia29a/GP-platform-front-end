@@ -24,12 +24,12 @@ export function roleGuard(...roles: Role[]): CanActivateFn {
   };
 }
 
-/** The start page depends on the role: patients ask a question, practice staff see the incoming questions. */
+/** The start page depends on the role: patients ask a question, practice staff see the queue. */
 export const homeGuard: CanActivateFn = () => {
   const user = inject(AuthService).user();
   const router = inject(Router);
   if (!user) {
     return router.createUrlTree(['/sign-in']);
   }
-  return router.createUrlTree([user.role === 'PATIENT' ? '/ask' : '/questions']);
+  return router.createUrlTree([user.role === 'PATIENT' ? '/ask' : '/queue']);
 };

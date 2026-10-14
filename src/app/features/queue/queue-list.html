@@ -1,0 +1,73 @@
+<section class="card">
+  <header class="queue-header">
+    <div>
+      <h1>Queue</h1>
+      <p class="subtitle">
+        Most urgent first. Drag a question, or use the arrows, to change the order.
+        @if (lastUpdated(); as updated) {
+          <span class="updated">Updated {{ updated | date: 'HH:mm:ss' }}</span>
+        }
+      </p>
+    </div>
+    <button type="button" class="button secondary" (click)="load()" [disabled]="loading() || saving()">
+      {{ loading() ? 'Loading…' : 'Refresh' }}
+    </button>
+  </header>
+
+  <p class="score-help">
+    The <strong>score</strong> (0–100) is a sorting suggestion calculated from the patient's answers. It is not a
+    diagnosis, and your order always wins.
+  </p>
+
+  @if (notice(); as message) {
+    <p class="info" role="status">{{ message }}</p>
+  }
+  @if (errorMessage(); as message) {
+    <p class="alert" role="alert">{{ message }}</p>
+  }
+
+  <p class="visually-hidden" aria-live="polite">{{ announcement() }}</p>
+
+  @if (!loading() || items().length > 0) {
+    <ol
+      class="queue"
+      cdkDropList
+      [cdkDropListData]="items()"
+      [cdkDropListDisabled]="saving()"
+      (cdkDropListDropped)="drop($event)"
+      [class.busy]="saving()"
+    >
+      @for (item of items(); track item.id; let i = $index, first = $first, last = $last) {
+        <li class="queue-item" cdkDrag cdkDragLockAxis="y" (cdkDragStarted)="dragging.set(true)">
+          <button type="button" class="handle" cdkDragHandle aria-hidden="true" tabindex="-1" title="Drag to move">⠿</button>
+
+          <span class="position">{{ i + 1 }}</span>
+
+          <a class="summary" [routerLink]="['/questions', item.id]">
+            <span class="top-line">
+              <span class="patient">{{ item.patientName }}</span>
+              <span [class]="'score ' + scoreLevel(item.severityScore)">Score {{ item.severityScore }}</span>
+            </span>
+            <span class="description">{{ item.description }}</span>
+            <span class="meta">
+              <span>{{ areaLabel(item) }}</span>
+              <span>Bothers {{ item.severity }}/10</span>
+              <time [attr.datetime]="item.submittedAt">{{ item.submittedAt | date: 'd MMM, HH:mm' }}</time>
+            </span>
+          </a>
+
+          <span class="arrows">
+            <button type="button" class="arrow" (click)="move(i, i - 1)" [disabled]="first || saving()"
+                    [attr.aria-label]="'Move ' + item.patientName + ' up'">▲</button>
+            <button type="button" class="arrow" (click)="move(i, i + 1)" [disabled]="last || saving()"
+                    [attr.aria-label]="'Move ' + item.patientName + ' down'">▼</button>
+          </span>
+        </li>
+      } @empty {
+        @if (!errorMessage()) {
+          <li class="empty">The queue is empty. New questions appear here automatically.</li>
+        }
+      }
+    </ol>
+  }
+</section>
