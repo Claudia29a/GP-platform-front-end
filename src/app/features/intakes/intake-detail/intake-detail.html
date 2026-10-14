@@ -19,7 +19,51 @@
         <time [attr.datetime]="intake.submittedAt">{{ intake.submittedAt | date: 'EEEE d MMMM y, HH:mm' }}</time>
       </dd>
     </dl>
-    <h2>Description</h2>
+
+    <h2>The problem</h2>
+    <dl>
+      <dt>Where</dt>
+      <dd>{{ areaLabel(intake) }}</dd>
+      <dt>How long</dt>
+      <dd>{{ durationLabel(intake.duration) }}</dd>
+      <dt>How much it bothers</dt>
+      <dd>
+        <span class="severity" [attr.aria-label]="intake.severity + ' out of 10'">
+          <span class="severity-bar" aria-hidden="true"><span [style.width.%]="intake.severity * 10"></span></span>
+          {{ intake.severity }} / 10
+        </span>
+      </dd>
+      <dt>Symptoms</dt>
+      <dd>
+        @for (symptom of symptomLabels(intake); track symptom) {
+          <span class="tag">{{ symptom }}</span>
+        } @empty {
+          <span class="none">None ticked</span>
+        }
+      </dd>
+    </dl>
+
+    <h2>Medication and treatment</h2>
+    <dl>
+      <dt>Current medication</dt>
+      <dd>
+        @if (intake.takesMedication) {
+          Yes: {{ intake.currentMedication }}
+        } @else {
+          <span class="none">No</span>
+        }
+      </dd>
+      <dt>Already tried</dt>
+      <dd>
+        @if (intake.triedTreatment) {
+          Yes: {{ intake.treatmentTried }}
+        } @else {
+          <span class="none">No</span>
+        }
+      </dd>
+    </dl>
+
+    <h2>The question</h2>
     <p class="description">{{ intake.description }}</p>
   }
 </section>

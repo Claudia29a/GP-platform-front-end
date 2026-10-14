@@ -24,6 +24,8 @@
             <span class="description">{{ intake.description }}</span>
             <span class="meta">
               <span class="badge">{{ intake.status }}</span>
+              <span>{{ areaLabel(intake) }}</span>
+              <span>{{ intake.severity }}/10</span>
               <time [attr.datetime]="intake.submittedAt">{{ intake.submittedAt | date: 'd MMM y, HH:mm' }}</time>
             </span>
           </a>

@@ -94,10 +94,6 @@ a {
   border-radius: var(--radius);
 }
 
-.error {
-  color: var(--danger);
-}
-
 .badge {
   display: inline-block;
   padding: 0.1rem 0.55rem;
@@ -107,4 +103,107 @@ a {
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.02em;
+}
+
+/* ---------- Form controls, shared by every form ---------- */
+
+input[type='text'],
+textarea {
+  width: 100%;
+  font: inherit;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+
+  &:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+  }
+
+  &.ng-invalid.ng-touched,
+  &[aria-invalid='true'] {
+    border-color: var(--danger);
+  }
+}
+
+textarea {
+  resize: vertical;
+}
+
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0 0 1.5rem;
+  min-width: 0;
+}
+
+legend,
+.field > label,
+.follow-up > label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  padding: 0;
+}
+
+.optional {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* A row of answer "chips": a radio button or checkbox inside a bordered label. */
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  user-select: none;
+
+  input {
+    margin: 0;
+    accent-color: var(--primary);
+  }
+
+  &:hover {
+    border-color: var(--primary);
+    background: var(--primary-tint);
+  }
+
+  &:has(input:checked) {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    color: var(--navy);
+    font-weight: 600;
+  }
+
+  &:has(input:focus-visible) {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+fieldset.invalid .choice {
+  border-color: var(--danger);
+}
+
+.field {
+  margin-bottom: 1.5rem;
+}
+
+.error {
+  color: var(--danger);
+  font-size: 0.875rem;
+  margin: 0.4rem 0 0;
 }

@@ -23,30 +23,166 @@
     </p>
 
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-      <label for="description">Describe your complaint</label>
-      <textarea
-        id="description"
-        formControlName="description"
-        rows="7"
-        placeholder="For example: I have had an itchy rash on my arm for two weeks."
-        [attr.aria-invalid]="form.controls.description.invalid && form.controls.description.touched"
-        aria-describedby="description-hint description-error"
-      ></textarea>
+      <!-- 1. The problem -->
+      <section class="step" aria-labelledby="step-problem">
+        <h2 id="step-problem"><span class="step-number">1</span> Your problem</h2>
 
-      <div class="field-footer">
-        <span id="description-error" class="error">
-          @if (form.controls.description.touched) {
-            @if (form.controls.description.hasError('required') || form.controls.description.hasError('blank')) {
-              Please describe your complaint.
-            } @else if (form.controls.description.hasError('maxlength')) {
-              Please keep it under {{ maxLength }} characters.
+        <fieldset [class.invalid]="showError(form.controls.complaintArea)">
+          <legend>Where is the problem?</legend>
+          <div class="choices">
+            @for (area of areas; track area.value) {
+              <label class="choice">
+                <input type="radio" name="complaintArea" formControlName="complaintArea" [value]="area.value" [id]="'area-' + area.value" />
+                {{ area.label }}
+              </label>
             }
+          </div>
+          @if (areaIsOther()) {
+            <div class="follow-up">
+              <label for="complaintAreaOther">Where exactly?</label>
+              <input id="complaintAreaOther" type="text" formControlName="complaintAreaOther" [maxlength]="maxLength.complaintAreaOther" placeholder="For example: ears" />
+              @if (showError(form.controls.complaintAreaOther)) {
+                <p class="error">Please say where the problem is.</p>
+              }
+            </div>
           }
-        </span>
-        <span id="description-hint" class="counter" [class.over]="length() > maxLength">
-          {{ length() }} / {{ maxLength }}
-        </span>
-      </div>
+          @if (showError(form.controls.complaintArea)) {
+            <p class="error">Please choose where the problem is.</p>
+          }
+        </fieldset>
+
+        <fieldset [class.invalid]="showError(form.controls.duration)">
+          <legend>How long has it been going on?</legend>
+          <div class="choices">
+            @for (duration of durations; track duration.value) {
+              <label class="choice">
+                <input type="radio" name="duration" formControlName="duration" [value]="duration.value" [id]="'duration-' + duration.value" />
+                {{ duration.label }}
+              </label>
+            }
+          </div>
+          @if (showError(form.controls.duration)) {
+            <p class="error">Please choose how long it has been going on.</p>
+          }
+        </fieldset>
+
+        <fieldset [class.invalid]="showError(form.controls.severity)">
+          <legend>How much does it bother you?</legend>
+          <div class="scale">
+            @for (level of severities; track level) {
+              <label class="choice scale-step">
+                <input type="radio" name="severity" formControlName="severity" [value]="level" [id]="'severity-' + level" />
+                {{ level }}
+              </label>
+            }
+          </div>
+          <div class="scale-labels" aria-hidden="true">
+            <span>1 = barely</span>
+            <span>10 = worst imaginable</span>
+          </div>
+          @if (showError(form.controls.severity)) {
+            <p class="error">Please choose a number from 1 to 10.</p>
+          }
+        </fieldset>
+      </section>
+
+      <!-- 2. Symptoms -->
+      <section class="step" aria-labelledby="step-symptoms">
+        <h2 id="step-symptoms"><span class="step-number">2</span> Symptoms</h2>
+
+        <fieldset formGroupName="symptoms">
+          <legend>Which symptoms do you have? <span class="optional">(tick all that apply)</span></legend>
+          <div class="choices">
+            @for (symptom of symptomOptions; track symptom.value) {
+              <label class="choice">
+                <input type="checkbox" [formControlName]="symptom.value" [id]="'symptom-' + symptom.value" />
+                {{ symptom.label }}
+              </label>
+            }
+          </div>
+        </fieldset>
+
+        <div class="field">
+          <label for="symptomsOther">Other symptoms <span class="optional">(optional)</span></label>
+          <input id="symptomsOther" type="text" formControlName="symptomsOther" [maxlength]="maxLength.symptomsOther" placeholder="For example: ringing in my ears" />
+        </div>
+      </section>
+
+      <!-- 3. Medication and treatment -->
+      <section class="step" aria-labelledby="step-treatment">
+        <h2 id="step-treatment"><span class="step-number">3</span> Medication and treatment</h2>
+
+        <fieldset [class.invalid]="showError(form.controls.takesMedication)">
+          <legend>Do you currently take any medication or treatment?</legend>
+          <div class="choices yes-no">
+            <label class="choice"><input type="radio" name="takesMedication" formControlName="takesMedication" [value]="true" id="medication-yes" /> Yes</label>
+            <label class="choice"><input type="radio" name="takesMedication" formControlName="takesMedication" [value]="false" id="medication-no" /> No</label>
+          </div>
+          @if (takesMedication()) {
+            <div class="follow-up">
+              <label for="currentMedication">Which medication or treatment?</label>
+              <textarea id="currentMedication" formControlName="currentMedication" rows="2" [maxlength]="maxLength.currentMedication" placeholder="For example: blood pressure tablets, once a day"></textarea>
+              @if (showError(form.controls.currentMedication)) {
+                <p class="error">Please say which medication or treatment you take.</p>
+              }
+            </div>
+          }
+          @if (showError(form.controls.takesMedication)) {
+            <p class="error">Please answer yes or no.</p>
+          }
+        </fieldset>
+
+        <fieldset [class.invalid]="showError(form.controls.triedTreatment)">
+          <legend>Have you already tried anything for this problem?</legend>
+          <div class="choices yes-no">
+            <label class="choice"><input type="radio" name="triedTreatment" formControlName="triedTreatment" [value]="true" id="tried-yes" /> Yes</label>
+            <label class="choice"><input type="radio" name="triedTreatment" formControlName="triedTreatment" [value]="false" id="tried-no" /> No</label>
+          </div>
+          @if (triedTreatment()) {
+            <div class="follow-up">
+              <label for="treatmentTried">What did you try?</label>
+              <textarea id="treatmentTried" formControlName="treatmentTried" rows="2" [maxlength]="maxLength.treatmentTried" placeholder="For example: paracetamol and rest"></textarea>
+              @if (showError(form.controls.treatmentTried)) {
+                <p class="error">Please say what you already tried.</p>
+              }
+            </div>
+          }
+          @if (showError(form.controls.triedTreatment)) {
+            <p class="error">Please answer yes or no.</p>
+          }
+        </fieldset>
+      </section>
+
+      <!-- 4. The question -->
+      <section class="step" aria-labelledby="step-question">
+        <h2 id="step-question"><span class="step-number">4</span> Your question</h2>
+
+        <div class="field">
+          <label for="description">Describe your question</label>
+          <textarea
+            id="description"
+            formControlName="description"
+            rows="6"
+            placeholder="For example: I have had an itchy rash on my arm for two weeks. Should I come in?"
+            [attr.aria-invalid]="showError(form.controls.description)"
+            aria-describedby="description-counter"
+          ></textarea>
+          <div class="field-footer">
+            <span class="error">
+              @if (showError(form.controls.description)) {
+                @if (form.controls.description.hasError('maxlength')) {
+                  Please keep it under {{ maxLength.description }} characters.
+                } @else {
+                  Please describe your question.
+                }
+              }
+            </span>
+            <span id="description-counter" class="counter" [class.over]="descriptionLength() > maxLength.description">
+              {{ descriptionLength() }} / {{ maxLength.description }}
+            </span>
+          </div>
+        </div>
+      </section>
 
       @if (errorMessage(); as message) {
         <p class="alert" role="alert">{{ message }}</p>

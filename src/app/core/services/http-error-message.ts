@@ -9,7 +9,7 @@ export function httpErrorMessage(error: unknown): string {
     case 0:
       return 'The server cannot be reached. Please check that the back-end is running.';
     case 400:
-      return 'The description is missing or too long.';
+      return 'Some answers are missing or not valid. Please check the form.';
     case 401:
       return 'Your session has ended. Please sign in again.';
     case 403:
