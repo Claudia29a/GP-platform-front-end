@@ -1,10 +1,25 @@
 <header class="topbar">
   <div class="topbar-inner">
     <a routerLink="/" class="brand">CareBridge</a>
-    <nav aria-label="Main">
-      <a routerLink="/ask" routerLinkActive="active">Ask a question</a>
-      <a routerLink="/intakes" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">Incoming questions</a>
-    </nav>
+
+    @if (auth.user(); as user) {
+      <nav aria-label="Main">
+        @if (auth.isStaff()) {
+          <a routerLink="/questions" routerLinkActive="active">Incoming questions</a>
+        } @else {
+          <a routerLink="/ask" routerLinkActive="active">Ask a question</a>
+          <a routerLink="/questions" routerLinkActive="active">My questions</a>
+        }
+      </nav>
+
+      <div class="account">
+        <span class="who">
+          <span class="name">{{ user.name }}</span>
+          <span class="role">{{ roleLabel() }}</span>
+        </span>
+        <button type="button" class="sign-out" (click)="signOut()">Sign out</button>
+      </div>
+    }
   </div>
 </header>
 

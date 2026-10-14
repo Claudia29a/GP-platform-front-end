@@ -1,0 +1,23 @@
+<section class="card sign-in">
+  <h1>Welcome to CareBridge</h1>
+  <p class="lead">
+    Ask your GP practice a question without having to call. Practice staff sign in here to review incoming questions.
+  </p>
+
+  @if (sessionExpired()) {
+    <p class="info" role="status">Your session has ended. Please sign in again.</p>
+  }
+
+  <div #googleButton class="google-button" [class.hidden]="signingIn()"></div>
+  @if (signingIn()) {
+    <p class="muted" role="status">Signing you in…</p>
+  }
+
+  @if (errorMessage(); as message) {
+    <p class="alert" role="alert">{{ message }}</p>
+  }
+
+  <p class="privacy">
+    CareBridge uses your Google account only to know who you are. We never see or store your Google password.
+  </p>
+</section>

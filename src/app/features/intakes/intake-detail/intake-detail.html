@@ -1,5 +1,5 @@
 <section class="card">
-  <a routerLink="/intakes" class="back">← All questions</a>
+  <a routerLink="/questions" class="back">← {{ isStaff() ? 'All questions' : 'My questions' }}</a>
 
   @if (loading()) {
     <p>Loading…</p>
@@ -8,6 +8,10 @@
   } @else if (intake(); as intake) {
     <h1>Question</h1>
     <dl>
+      @if (isStaff()) {
+        <dt>Patient</dt>
+        <dd>{{ intake.patientName }} <span class="email">({{ intake.patientEmail }})</span></dd>
+      }
       <dt>Status</dt>
       <dd><span class="badge">{{ intake.status }}</span></dd>
       <dt>Submitted</dt>

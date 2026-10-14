@@ -3,6 +3,7 @@ import { Component, OnInit, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
+import { AuthService } from '../../../core/auth/auth.service';
 import { Intake } from '../../../core/models/intake.model';
 import { httpErrorMessage } from '../../../core/services/http-error-message';
 import { IntakeService } from '../../../core/services/intake.service';
@@ -15,6 +16,8 @@ import { IntakeService } from '../../../core/services/intake.service';
 })
 export class IntakeDetail implements OnInit {
   private readonly intakeService = inject(IntakeService);
+
+  protected readonly isStaff = inject(AuthService).isStaff;
 
   /** Bound from the :id route parameter. */
   readonly id = input.required<string>();
