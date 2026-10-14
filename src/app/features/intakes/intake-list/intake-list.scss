@@ -36,6 +36,10 @@
   }
 }
 
+.patient {
+  font-weight: 600;
+}
+
 .description {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -54,4 +58,9 @@
   padding: 2rem 0;
   text-align: center;
   color: var(--muted);
+
+  a {
+    display: inline;
+    padding: 0;
+  }
 }

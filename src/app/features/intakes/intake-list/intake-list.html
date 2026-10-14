@@ -1,7 +1,7 @@
 <section class="card">
   <header class="list-header">
     <div>
-      <h1>Incoming questions</h1>
+      <h1>{{ isStaff() ? 'Incoming questions' : 'My questions' }}</h1>
       <p class="subtitle">Oldest first</p>
     </div>
     <button type="button" class="button secondary" (click)="load()" [disabled]="loading()">
@@ -17,7 +17,10 @@
     <ul class="intakes">
       @for (intake of intakes(); track intake.id) {
         <li>
-          <a [routerLink]="['/intakes', intake.id]">
+          <a [routerLink]="['/questions', intake.id]">
+            @if (isStaff()) {
+              <span class="patient">{{ intake.patientName }}</span>
+            }
             <span class="description">{{ intake.description }}</span>
             <span class="meta">
               <span class="badge">{{ intake.status }}</span>
@@ -27,7 +30,11 @@
         </li>
       } @empty {
         @if (!errorMessage()) {
-          <li class="empty">No questions have been submitted yet.</li>
+          @if (isStaff()) {
+            <li class="empty">No questions have been submitted yet.</li>
+          } @else {
+            <li class="empty">You have not asked any questions yet. <a routerLink="/ask">Ask your first question</a></li>
+          }
         }
       }
     </ul>

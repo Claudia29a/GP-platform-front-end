@@ -1,9 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize, map } from 'rxjs';
 
+import { AuthService } from '../../../core/auth/auth.service';
 import { Intake, MAX_DESCRIPTION_LENGTH } from '../../../core/models/intake.model';
 import { httpErrorMessage } from '../../../core/services/http-error-message';
 import { IntakeService } from '../../../core/services/intake.service';
@@ -14,12 +16,15 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
 
 @Component({
   selector: 'app-intake-form',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [DatePipe, ReactiveFormsModule, RouterLink],
   templateUrl: './intake-form.html',
   styleUrl: './intake-form.scss',
 })
 export class IntakeForm {
   private readonly intakeService = inject(IntakeService);
+  private readonly auth = inject(AuthService);
+
+  protected readonly firstName = computed(() => this.auth.user()?.name.split(' ')[0] ?? '');
 
   protected readonly maxLength = MAX_DESCRIPTION_LENGTH;
   protected readonly form = inject(NonNullableFormBuilder).group({

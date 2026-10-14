@@ -10,6 +10,10 @@ export function httpErrorMessage(error: unknown): string {
       return 'The server cannot be reached. Please check that the back-end is running.';
     case 400:
       return 'The description is missing or too long.';
+    case 401:
+      return 'Your session has ended. Please sign in again.';
+    case 403:
+      return 'Your account does not have access to this.';
     case 404:
       return 'This question could not be found.';
     default:

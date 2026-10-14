@@ -3,14 +3,19 @@
     <div class="confirmation" role="status">
       <h1>Your question has been sent</h1>
       <p>The practice will review it. You do not need to call.</p>
-      <p class="reference">Reference: <code>{{ intake.id }}</code></p>
+      <p class="sent-at">
+        Sent on {{ intake.submittedAt | date: 'd MMMM y, HH:mm' }}. You can follow it under My questions.
+      </p>
       <div class="actions">
-        <a class="button" [routerLink]="['/intakes', intake.id]">View your question</a>
+        <a class="button" [routerLink]="['/questions', intake.id]">View your question</a>
         <button type="button" class="button secondary" (click)="startNew()">Ask another question</button>
       </div>
     </div>
   } @else {
     <h1>Ask the practice a question</h1>
+    @if (firstName(); as name) {
+      <p class="greeting">Hi {{ name }}, what would you like to ask your GP?</p>
+    }
 
     <p class="notice">
       <strong>Not for emergencies.</strong> If your complaint is urgent or life-threatening, call 112
