@@ -1,5 +1,6 @@
 # Front-end pipeline (SAD v2, section 8.2).
-# Every push and pull request: test, SonarQube Cloud analysis (quality gate) and build.
+# Every push and pull request: test and build. Pull requests into main and pushes to main also get the
+# SonarQube Cloud analysis and its quality gate (the Free plan analyses nothing else).
 # Push to main: build the image, push it to GHCR and deploy to Azure.
 # Actions are pinned to a full commit SHA (the version is in the comment), so a moved tag cannot change what runs.
 name: frontend
@@ -34,7 +35,10 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Test with coverage
         run: npm run test:coverage
+      # The Free plan of SonarQube Cloud analyses only main and pull requests into main,
+      # so pushes to other branches run the tests but skip the analysis.
       - name: SonarQube Cloud analysis
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
         uses: SonarSource/sonarqube-scan-action@d209202bc7d53ff1cc128f7f907dac145c9d6ae9 # v8.3.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
