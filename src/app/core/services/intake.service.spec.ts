@@ -42,6 +42,12 @@ describe('IntakeService', () => {
     call.flush({});
   });
 
+  it('gets all intakes the user may see', () => {
+    service.getAll().subscribe();
+
+    expect(http.expectOne('/api/intakes').request.method).toBe('GET');
+  });
+
   it('gets one intake by id', () => {
     service.getById('abc').subscribe();
 

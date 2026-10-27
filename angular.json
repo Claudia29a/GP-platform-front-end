@@ -74,7 +74,22 @@
           }
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "coverageReporters": [
+              "lcov",
+              "text-summary",
+              "html"
+            ],
+            "coverageExclude": [
+              "src/**/*.spec.ts",
+              "src/main.ts",
+              "src/environments/**"
+            ],
+            "coverageInclude": [
+              "src/app/**/*.ts"
+            ]
+          }
         }
       }
     }

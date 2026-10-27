@@ -1,5 +1,8 @@
 # Front-end pipeline (SAD v2, section 8.2).
-# Every push and pull request: test and build. Push to main: build the image, push it to GHCR and deploy to Azure.
+# Every push and pull request: test and build. Pull requests into main and pushes to main also get the
+# SonarQube Cloud analysis and its quality gate (the Free plan analyses nothing else).
+# Push to main: build the image, push it to GHCR and deploy to Azure.
+# Actions are pinned to a full commit SHA (the version is in the comment), so a moved tag cannot change what runs.
 name: frontend
 
 on:
@@ -20,16 +23,27 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # SonarQube Cloud needs the full history to tell new code from old code.
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
           cache: npm
-      - run: npm ci --no-audit --no-fund
-      - name: Test
-        run: npx ng test --watch=false
+      # --ignore-scripts: no install scripts of dependencies run in the pipeline (supply-chain hardening).
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Test with coverage
+        run: npm run test:coverage
+      # The Free plan of SonarQube Cloud analyses only main and pull requests into main,
+      # so pushes to other branches run the tests but skip the analysis.
+      - name: SonarQube Cloud analysis
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+        uses: SonarSource/sonarqube-scan-action@d209202bc7d53ff1cc128f7f907dac145c9d6ae9 # v8.3.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       - name: Build
-        run: npx ng build --configuration production
+        run: npm run build
 
   deploy:
     needs: build-and-test
@@ -41,15 +55,15 @@ jobs:
       packages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v7
-      - uses: docker/setup-buildx-action@v4
-      - uses: docker/login-action@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push image
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           push: true
@@ -58,7 +72,7 @@ jobs:
             ${{ env.IMAGE }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      - uses: azure/login@v3
+      - uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
           tenant-id: ${{ env.AZURE_TENANT_ID }}

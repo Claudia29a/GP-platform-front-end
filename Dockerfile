@@ -4,10 +4,12 @@ WORKDIR /app
 
 # Install dependencies first, so this layer is cached until package*.json changes.
 COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund
+# --ignore-scripts: dependencies' install scripts never run during the build.
+RUN npm ci --ignore-scripts --no-audit --no-fund
 
 COPY . .
-RUN npx ng build --configuration production
+# The production build (the default configuration of "ng build"), using the locally installed Angular CLI.
+RUN npm run build
 
 # Stage 2: serve the built files with nginx (runs as a non-root user on port 8080).
 FROM nginxinc/nginx-unprivileged:1.31-alpine
