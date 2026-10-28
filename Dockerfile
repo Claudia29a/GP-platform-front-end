@@ -16,6 +16,7 @@ FROM nginxinc/nginx-unprivileged:1.31-alpine
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist/carebridge-front-end/browser /usr/share/nginx/html
 
-# Where nginx forwards /api requests; set per environment.
+# Where nginx forwards /api and /api/account requests; set per environment.
 ENV API_URL=http://localhost:8080
+ENV ACCOUNT_API_URL=http://localhost:8081
 EXPOSE 8080

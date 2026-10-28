@@ -10,6 +10,14 @@ server {
     add_header X-Frame-Options "DENY" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
+    # Sign-up and sign-in with email and password: /api/account/login -> ${ACCOUNT_API_URL}/login (ADR-010).
+    location /api/account/ {
+        proxy_pass ${ACCOUNT_API_URL}/;
+        proxy_ssl_server_name on;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     # Same job as proxy.conf.json during development: /api/intakes -> ${API_URL}/intakes.
     location /api/ {
         proxy_pass ${API_URL}/;

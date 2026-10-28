@@ -28,8 +28,74 @@
   text-align: left;
 }
 
-.muted {
+/* "or use your email address" between two lines. */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+  font-size: 0.875rem;
   color: var(--muted);
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid var(--border);
+  }
+}
+
+.tabs {
+  display: flex;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+
+  button {
+    flex: 1;
+    font: inherit;
+    padding: 0.6rem;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+
+    &[aria-selected='true'] {
+      border-bottom-color: var(--primary);
+      color: var(--navy);
+      font-weight: 600;
+    }
+  }
+}
+
+form {
+  text-align: left;
+
+  .button {
+    width: 100%;
+  }
+}
+
+.field {
+  margin-bottom: 1rem;
+}
+
+.rules {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+
+  li.met {
+    color: var(--navy);
+  }
+}
+
+.mark {
+  display: inline-block;
+  width: 1.25rem;
+  font-weight: 700;
 }
 
 .privacy {
