@@ -1,6 +1,6 @@
 # ADR-006 Login with Google Sign-In (OpenID Connect)
 
-**Status:** Accepted on 14 October 2026, after the increment 1 spike (see *Spike result*). Was: Proposed.
+**Status:** Accepted on 14 October 2026, after the increment 1 spike (see *Spike result*). Was: Proposed. Extended by [ADR-010](0010-email-and-password-sign-in.md): email and password sign-in next to Google.
 
 ## Context
 

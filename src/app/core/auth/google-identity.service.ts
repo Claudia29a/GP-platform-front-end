@@ -15,7 +15,8 @@ declare global {
   }
 }
 
-const SCRIPT_URL = 'https://accounts.google.com/gsi/client';
+/** `hl=en`: the button text follows this language, not the browser's. */
+const SCRIPT_URL = 'https://accounts.google.com/gsi/client?hl=en';
 
 /** Loads Google's sign-in script once and shows the "Sign in with Google" button. */
 @Injectable({ providedIn: 'root' })

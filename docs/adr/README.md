@@ -15,10 +15,11 @@ The same records are kept in both repositories (`docs/adr/`); a change to a deci
 | [ADR-003](0003-java-and-spring-boot.md) | Java and Spring Boot for the back-end services | Accepted |
 | [ADR-004](0004-three-services-by-business-capability.md) | Three services split by business capability | Accepted |
 | [ADR-005](0005-one-postgresql-database-per-service.md) | One PostgreSQL database per service | Accepted |
-| [ADR-006](0006-login-with-google-sign-in.md) | Login with Google Sign-In | Accepted (14 October 2026, after the increment 1 spike) |
+| [ADR-006](0006-login-with-google-sign-in.md) | Login with Google Sign-In | Accepted (14 October 2026, after the increment 1 spike); extended by ADR-010 |
 | [ADR-007](0007-synchronous-rest-between-services.md) | Synchronous REST between services; no message broker yet | Accepted |
 | [ADR-008](0008-early-deployment-to-managed-container-platform.md) | Early deployment of Docker containers to a managed container platform | Accepted |
 | [ADR-009](0009-two-repositories.md) | Two repositories: one for the front-end, one for the back-end services | Accepted |
+| [ADR-010](0010-email-and-password-sign-in.md) | Email and password sign-in next to Google, in a separate Account Service | Accepted (28 October 2026) |
 
 ## Template
 

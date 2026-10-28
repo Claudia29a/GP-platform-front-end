@@ -44,7 +44,7 @@ describe('GoogleIdentityService', () => {
   it("loads Google's script once when it is not on the page yet", async () => {
     const shown = service.renderButton(document.createElement('div'), vi.fn());
 
-    const scripts = document.head.querySelectorAll<HTMLScriptElement>('script[src="https://accounts.google.com/gsi/client"]');
+    const scripts = document.head.querySelectorAll<HTMLScriptElement>('script[src="https://accounts.google.com/gsi/client?hl=en"]');
     expect(scripts).toHaveLength(1);
     installGoogle();
     scripts[0].onload!(new Event('load'));

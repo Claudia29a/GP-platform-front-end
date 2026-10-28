@@ -8,9 +8,78 @@
     <p class="info" role="status">Your session has ended. Please sign in again.</p>
   }
 
-  <div #googleButton class="google-button" [class.hidden]="signingIn()"></div>
-  @if (signingIn()) {
-    <p class="muted" role="status">Signing you in…</p>
+  <div #googleButton class="google-button" [class.hidden]="busy()"></div>
+
+  <p class="divider"><span>or use your email address</span></p>
+
+  <div class="tabs" role="tablist" aria-label="Sign in with email">
+    <button type="button" role="tab" id="tab-sign-in" [attr.aria-selected]="mode() === 'sign-in'" (click)="switchTo('sign-in')">
+      Sign in
+    </button>
+    <button type="button" role="tab" id="tab-create" [attr.aria-selected]="mode() === 'create'" (click)="switchTo('create')">
+      Create account
+    </button>
+  </div>
+
+  @if (mode() === 'sign-in') {
+    <form [formGroup]="signInForm" (ngSubmit)="signInWithEmail()" novalidate role="tabpanel" aria-labelledby="tab-sign-in">
+      <div class="field">
+        <label for="signin-email">Email address</label>
+        <input id="signin-email" type="email" formControlName="email" autocomplete="email" />
+        @if (showError(signInForm.controls.email)) {
+          <p class="error">Please enter a valid email address.</p>
+        }
+      </div>
+      <div class="field">
+        <label for="signin-password">Password</label>
+        <input id="signin-password" type="password" formControlName="password" autocomplete="current-password" />
+        @if (showError(signInForm.controls.password)) {
+          <p class="error">Please enter your password.</p>
+        }
+      </div>
+      <button type="submit" class="button" [disabled]="busy()">{{ busy() ? 'Signing in…' : 'Sign in' }}</button>
+    </form>
+  } @else {
+    <form [formGroup]="createForm" (ngSubmit)="createAccount()" novalidate role="tabpanel" aria-labelledby="tab-create">
+      <div class="field">
+        <label for="create-name">Your name</label>
+        <input id="create-name" type="text" formControlName="name" autocomplete="name" />
+        @if (showError(createForm.controls.name)) {
+          <p class="error">Please enter your name.</p>
+        }
+      </div>
+      <div class="field">
+        <label for="create-email">Email address</label>
+        <input id="create-email" type="email" formControlName="email" autocomplete="email" />
+        @if (showError(createForm.controls.email)) {
+          <p class="error">Please enter a valid email address.</p>
+        }
+      </div>
+      <div class="field">
+        <label for="create-password">Password</label>
+        <input id="create-password" type="password" formControlName="password" autocomplete="new-password"
+               [maxlength]="maxPasswordLength" aria-describedby="password-rules" />
+        <ul id="password-rules" class="rules" aria-live="polite">
+          @for (rule of rules; track rule.id) {
+            <li [class.met]="rule.test(newPassword())">
+              <span class="mark" aria-hidden="true">{{ rule.test(newPassword()) ? '✓' : '○' }}</span>
+              {{ rule.label }}
+              <span class="visually-hidden">{{ rule.test(newPassword()) ? '(done)' : '(not yet)' }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+      <div class="field">
+        <label for="create-confirm">Repeat password</label>
+        <input id="create-confirm" type="password" formControlName="confirm" autocomplete="new-password" />
+        @if (createForm.hasError('mismatch') && createForm.controls.confirm.touched) {
+          <p class="error">The passwords are not the same.</p>
+        } @else if (showError(createForm.controls.confirm)) {
+          <p class="error">Please repeat your password.</p>
+        }
+      </div>
+      <button type="submit" class="button" [disabled]="busy()">{{ busy() ? 'Creating your account…' : 'Create account' }}</button>
+    </form>
   }
 
   @if (errorMessage(); as message) {
@@ -18,6 +87,7 @@
   }
 
   <p class="privacy">
-    CareBridge uses your Google account only to know who you are. We never see or store your Google password.
+    With Google, CareBridge never sees your Google password. With email, your password is stored only in encrypted
+    (hashed) form.
   </p>
 </section>
