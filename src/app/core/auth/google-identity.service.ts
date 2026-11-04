@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
-import { environment } from '../../../environments/environment';
+import { RuntimeConfigService } from '../config/runtime-config.service';
 
 /** The small part of Google Identity Services (https://accounts.google.com/gsi/client) that CareBridge uses. */
 interface GoogleAccountsId {
@@ -21,12 +21,17 @@ const SCRIPT_URL = 'https://accounts.google.com/gsi/client?hl=en';
 /** Loads Google's sign-in script once and shows the "Sign in with Google" button. */
 @Injectable({ providedIn: 'root' })
 export class GoogleIdentityService {
+  private readonly config = inject(RuntimeConfigService);
   private loading?: Promise<GoogleAccountsId>;
 
   async renderButton(parent: HTMLElement, onSignIn: (idToken: string) => void): Promise<void> {
+    const clientId = this.config.googleClientId;
+    if (!clientId) {
+      throw new Error('Google sign-in is not configured');
+    }
     const google = await this.load();
     google.initialize({
-      client_id: environment.googleClientId,
+      client_id: clientId,
       callback: (response) => onSignIn(response.credential),
     });
     google.renderButton(parent, { theme: 'outline', size: 'large', shape: 'pill', text: 'signin_with', width: 280, locale: 'en' });

@@ -10,6 +10,14 @@ server {
     add_header X-Frame-Options "DENY" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
+    # The settings of this environment, read by the app when it starts. The client ID is public, not a secret.
+    location = /config.json {
+        default_type application/json;
+        add_header Cache-Control "no-store";
+        add_header X-Content-Type-Options "nosniff" always;
+        return 200 '{"googleClientId":"${GOOGLE_CLIENT_ID}"}';
+    }
+
     # Sign-up and sign-in with email and password: /api/account/login -> ${ACCOUNT_API_URL}/login (ADR-010).
     location /api/account/ {
         proxy_pass ${ACCOUNT_API_URL}/;
