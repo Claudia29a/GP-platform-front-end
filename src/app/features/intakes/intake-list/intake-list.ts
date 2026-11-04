@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth.service';
-import { Intake, areaLabel } from '../../../core/models/intake.model';
+import { Intake, STATUS_LABELS, areaLabel } from '../../../core/models/intake.model';
 import { httpErrorMessage } from '../../../core/services/http-error-message';
 import { IntakeService } from '../../../core/services/intake.service';
 
@@ -21,6 +21,7 @@ export class IntakeList implements OnInit {
   protected readonly isStaff = inject(AuthService).isStaff;
 
   protected readonly areaLabel = areaLabel;
+  protected readonly statusLabels = STATUS_LABELS;
 
   protected readonly intakes = signal<Intake[]>([]);
   protected readonly loading = signal(false);

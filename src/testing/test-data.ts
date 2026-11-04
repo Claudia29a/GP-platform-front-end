@@ -19,7 +19,7 @@ export function testIntake(overrides: Partial<Intake> = {}): Intake {
     triedTreatment: false,
     treatmentTried: null,
     description: 'Itchy rash on my left arm',
-    status: 'SUBMITTED',
+    status: 'IN_REVIEW',
     submittedAt: '2026-10-14T09:00:00Z',
     ...overrides,
   };

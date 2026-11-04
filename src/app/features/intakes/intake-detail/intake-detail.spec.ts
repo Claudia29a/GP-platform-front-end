@@ -36,6 +36,7 @@ describe('[component] IntakeDetail', () => {
     const text = page.textContent!;
 
     expect(getById).toHaveBeenCalledWith('question-1');
+    expect(page.querySelector('.badge')?.textContent).toBe('In review');
     expect(text).toContain('Skin');
     expect(text).toContain('1–4 weeks');
     expect(text).toContain('4 / 10');

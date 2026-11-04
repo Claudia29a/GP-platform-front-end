@@ -127,7 +127,31 @@ describe('[component] SignIn', () => {
       await submit();
 
       expect(accounts.login).not.toHaveBeenCalled();
-      expect(errors()).toEqual(['Please enter a valid email address.', 'Please enter your password.']);
+      expect(errors()).toEqual(['Please enter your email address.', 'Please enter your password.']);
+    });
+
+    it('says when the email address is mistyped', async () => {
+      await render();
+
+      await type('signin-email', 'not-an-email');
+      await submit();
+
+      expect(errors()).toContain('Please enter a valid email address.');
+      expect(accounts.login).not.toHaveBeenCalled();
+    });
+
+    it('scrolls a sign-in error into view, so it is seen on a small screen', async () => {
+      await render();
+      const scrollIntoView = vi.fn();
+      Element.prototype.scrollIntoView = scrollIntoView;
+      accounts.login.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 401 })));
+
+      await type('signin-email', 'bram@example.com');
+      await type('signin-password', 'Wrong123');
+      await submit();
+
+      expect(scrollIntoView).toHaveBeenCalled();
+      delete (Element.prototype as Partial<Element>).scrollIntoView;
     });
 
     it('says the same thing for a wrong email or a wrong password', async () => {

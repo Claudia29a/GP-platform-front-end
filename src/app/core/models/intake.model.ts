@@ -1,4 +1,4 @@
-export type IntakeStatus = 'SUBMITTED';
+export type IntakeStatus = 'IN_REVIEW';
 
 export type ComplaintArea =
   | 'HEAD_NECK'
@@ -103,6 +103,11 @@ export const SYMPTOMS: readonly { value: Symptom; label: string }[] = [
   { value: 'DIZZINESS', label: 'Dizziness' },
   { value: 'TROUBLE_SLEEPING', label: 'Trouble sleeping' },
 ];
+
+/** The words a person sees for each status. */
+export const STATUS_LABELS: Record<IntakeStatus, string> = {
+  IN_REVIEW: 'In review',
+};
 
 const label = <T extends string>(options: readonly { value: T; label: string }[], value: T): string =>
   options.find((option) => option.value === value)?.label ?? value;

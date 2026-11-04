@@ -30,7 +30,7 @@ describe('[component] IntakeForm', () => {
     triedTreatment: false,
     treatmentTried: null,
     description: 'Itchy rash on my arm',
-    status: 'SUBMITTED',
+    status: 'IN_REVIEW',
     submittedAt: '2026-10-14T09:00:00Z',
   };
 
@@ -100,6 +100,16 @@ describe('[component] IntakeForm', () => {
       'Please answer yes or no.',
       'Please describe your question.',
     ]);
+  });
+
+  it('links every error to its question for screen readers', async () => {
+    await submitForm();
+
+    const errorIds = Array.from(element.querySelectorAll('.error'), (el) => el.id).filter(Boolean);
+    expect(errorIds).toHaveLength(6);
+    for (const id of errorIds) {
+      expect(element.querySelector(`[aria-describedby~="${id}"]`)).not.toBeNull();
+    }
   });
 
   it('only asks "where exactly" when the area is Other, and then requires it', async () => {

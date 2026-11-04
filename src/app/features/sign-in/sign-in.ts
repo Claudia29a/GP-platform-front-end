@@ -1,4 +1,4 @@
-import { Component, ElementRef, afterNextRender, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, afterNextRender, effect, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -32,6 +32,7 @@ export class SignIn {
   private readonly fb = inject(NonNullableFormBuilder);
 
   private readonly googleButton = viewChild.required<ElementRef<HTMLElement>>('googleButton');
+  private readonly alert = viewChild<ElementRef<HTMLElement>>('alert');
 
   protected readonly sessionExpired = this.auth.sessionExpired;
   protected readonly mode = signal<Mode>('sign-in');
@@ -60,6 +61,9 @@ export class SignIn {
   protected readonly newPassword = toSignal(this.createForm.controls.password.valueChanges, { initialValue: '' });
 
   constructor() {
+    // On a small screen the message can appear below the visible part of the page.
+    effect(() => this.alert()?.nativeElement.scrollIntoView?.({ block: 'center' }));
+
     afterNextRender(() => {
       this.google
         .renderButton(this.googleButton().nativeElement, (token) => void this.complete(Promise.resolve(token)))
@@ -95,6 +99,11 @@ export class SignIn {
 
   protected showError(control: AbstractControl): boolean {
     return control.invalid && control.touched;
+  }
+
+  /** An empty field and a mistyped address need a different message. */
+  protected emailError(control: AbstractControl): string {
+    return control.hasError('required') ? 'Please enter your email address.' : 'Please enter a valid email address.';
   }
 
   private async loginToken(email: string, password: string): Promise<string> {
