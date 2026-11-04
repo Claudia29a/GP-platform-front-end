@@ -5,3 +5,5 @@ dist
 .vscode
 Dockerfile
 .dockerignore
+e2e
+playwright.config.ts
