@@ -93,6 +93,20 @@ describe('[component] QueueList', () => {
     expect(patients()).toEqual(['Anna', 'Bram', 'Cem']);
   });
 
+  it('stops refreshing when the user leaves the queue page', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    try {
+      await create();
+      fixture.destroy();
+
+      vi.advanceTimersByTime(REFRESH_INTERVAL_MS * 3);
+
+      expect(queueService.getQueue).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('refreshes by itself every 30 seconds, but not while an order is being saved', async () => {
     // Only the repeating timer is faked; Angular's own scheduling keeps running normally.
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });

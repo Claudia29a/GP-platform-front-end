@@ -8,7 +8,9 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:coverage": "ng test --watch=false --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "e2e:install": "playwright install --with-deps chromium",
+    "e2e:summary": "node e2e/support/acceptance-summary.mjs"
   },
   "private": true,
   "packageManager": "npm@12.2.0",

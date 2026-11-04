@@ -54,6 +54,22 @@ test.describe('[e2e] Story 4: severity queue', () => {
     await expect.poll(() => queueOrder(staff, ['First', 'Second'])).toEqual(['Second', 'First']);
   });
 
+  test('Story 4 TAC8: reordering works with the keyboard', async ({ browser, page, request }) => {
+    await signInAsNewPatient(page, request);
+    await askQuestion(page, { description: 'Keyboard first', severity: 8 });
+    await askQuestion(page, { description: 'Keyboard second', severity: 7 });
+
+    const staff = await (await browser.newContext()).newPage();
+    await signInAsStaff(staff, request, GP_EMAIL);
+    const names = ['Keyboard first', 'Keyboard second'];
+    await expect.poll(() => queueOrder(staff, names)).toEqual(names);
+
+    await staff.locator('.queue-item', { hasText: 'Keyboard second' }).getByRole('button', { name: /up$/ }).focus();
+    await staff.keyboard.press('Enter');
+
+    await expect.poll(() => queueOrder(staff, names)).toEqual(['Keyboard second', 'Keyboard first']);
+  });
+
   test('Story 4 AC4: a new question is never placed above a question staff moved up', async ({ browser, page, request }) => {
     await signInAsNewPatient(page, request);
     await askQuestion(page, { description: 'Serious', severity: 8 });

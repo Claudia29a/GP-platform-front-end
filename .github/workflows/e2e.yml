@@ -1,0 +1,77 @@
+# End-to-end tests: the whole platform in Docker and a real browser, one test per acceptance criterion.
+# Every pipeline calls this before its deploy job, so nothing is published unless the user stories still work.
+# The same file is in both repositories. It uses the same branch name in both, or main when the other repository has no such branch.
+name: e2e
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BRANCH: ${{ github.head_ref || github.ref_name }}
+      OWNER: ${{ github.repository_owner }}
+      # Test values only: the tests use their own staff accounts and replace Google's sign-in script.
+      GOOGLE_CLIENT_ID: ci-test-client.apps.googleusercontent.com
+      GP_EMAILS: e2e-gp@example.com
+      ASSISTANT_EMAILS: e2e-assistant@example.com
+      E2E_BACKEND_DIR: ../GP-platform-back-end
+    steps:
+      - name: Find the branch to test in each repository
+        id: refs
+        run: |
+          for side in front back; do
+            if git ls-remote --exit-code --heads "https://github.com/$OWNER/GP-platform-$side-end.git" "$BRANCH" > /dev/null; then
+              echo "$side=$BRANCH" >> "$GITHUB_OUTPUT"
+            else
+              echo "$side=main" >> "$GITHUB_OUTPUT"
+            fi
+          done
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository_owner }}/GP-platform-front-end
+          ref: ${{ steps.refs.outputs.front }}
+          path: GP-platform-front-end
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository_owner }}/GP-platform-back-end
+          ref: ${{ steps.refs.outputs.back }}
+          path: GP-platform-back-end
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: GP-platform-front-end/package-lock.json
+      - name: Start the whole platform
+        working-directory: GP-platform-back-end
+        run: docker compose up -d --build --wait
+      - name: Install the test browser
+        working-directory: GP-platform-front-end
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run e2e:install
+      - name: Run the end-to-end tests
+        working-directory: GP-platform-front-end
+        run: npm run test:e2e
+      - name: Write the acceptance report
+        if: always()
+        working-directory: GP-platform-front-end
+        run: npm run --silent e2e:summary >> "$GITHUB_STEP_SUMMARY"
+      - name: Show the service logs
+        if: failure()
+        working-directory: GP-platform-back-end
+        run: docker compose logs --tail 80
+      - name: Keep the test report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-report
+          path: GP-platform-front-end/e2e/test-output/
+          retention-days: 14
