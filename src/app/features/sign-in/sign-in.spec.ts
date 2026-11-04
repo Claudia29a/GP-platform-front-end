@@ -10,7 +10,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { GoogleIdentityService } from '../../core/auth/google-identity.service';
 import { SignIn } from './sign-in';
 
-describe('SignIn', () => {
+describe('[component] SignIn', () => {
   let fixture: ComponentFixture<SignIn>;
   let page: HTMLElement;
   let auth: { signIn: ReturnType<typeof vi.fn>; sessionExpired: ReturnType<typeof signal<boolean>> };

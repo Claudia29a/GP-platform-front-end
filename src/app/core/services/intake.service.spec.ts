@@ -19,7 +19,7 @@ const request: SubmitIntakeRequest = {
   description: 'Sore throat',
 };
 
-describe('IntakeService', () => {
+describe('[unit] IntakeService', () => {
   let service: IntakeService;
   let http: HttpTestingController;
 

@@ -1,6 +1,6 @@
 import { scoreLevel } from './queue.model';
 
-describe('scoreLevel', () => {
+describe('[unit] scoreLevel', () => {
   it('groups scores for colouring', () => {
     expect(scoreLevel(100)).toBe('high');
     expect(scoreLevel(60)).toBe('high');

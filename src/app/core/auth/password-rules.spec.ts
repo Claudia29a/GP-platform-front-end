@@ -2,7 +2,7 @@ import { FormControl } from '@angular/forms';
 
 import { PASSWORD_RULES, passwordRulesValidator } from './password-rules';
 
-describe('password rules', () => {
+describe('[unit] password rules', () => {
   const failed = (password: string) => passwordRulesValidator(new FormControl(password))?.['password'] ?? [];
 
   it('accepts a password that meets every rule', () => {

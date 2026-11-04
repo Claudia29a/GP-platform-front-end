@@ -7,7 +7,7 @@ import { App } from './app';
 import { AuthService } from './core/auth/auth.service';
 import { CurrentUser, isStaff } from './core/models/user.model';
 
-describe('App (top bar)', () => {
+describe('[component] App (top bar)', () => {
   let signOut: ReturnType<typeof vi.fn>;
 
   async function render(user: CurrentUser | null) {

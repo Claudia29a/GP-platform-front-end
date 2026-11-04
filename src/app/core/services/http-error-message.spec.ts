@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { httpErrorMessage } from './http-error-message';
 
-describe('httpErrorMessage', () => {
+describe('[unit] httpErrorMessage', () => {
   const forStatus = (status: number) => httpErrorMessage(new HttpErrorResponse({ status }));
 
   it('explains each status the back-end uses in plain words', () => {

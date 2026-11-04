@@ -13,7 +13,7 @@ function tokenExpiringAt(epochSeconds: number): string {
   return `header.${payload}.signature`;
 }
 
-describe('isExpired', () => {
+describe('[unit] isExpired', () => {
   const now = Date.parse('2026-10-14T12:00:00Z');
 
   it('is false before the expiry time', () => {
@@ -29,7 +29,7 @@ describe('isExpired', () => {
   });
 });
 
-describe('AuthService', () => {
+describe('[unit] AuthService', () => {
   let auth: AuthService;
   let http: HttpTestingController;
   let google: { disableAutoSelect: ReturnType<typeof vi.fn> };

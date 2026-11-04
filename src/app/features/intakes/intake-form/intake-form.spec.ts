@@ -9,7 +9,7 @@ import { CurrentUser } from '../../../core/models/user.model';
 import { IntakeService } from '../../../core/services/intake.service';
 import { IntakeForm } from './intake-form';
 
-describe('IntakeForm', () => {
+describe('[component] IntakeForm', () => {
   let fixture: ComponentFixture<IntakeForm>;
   let element: HTMLElement;
   let intakeService: { submit: ReturnType<typeof vi.fn> };

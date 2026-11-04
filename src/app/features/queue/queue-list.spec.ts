@@ -22,7 +22,7 @@ function item(id: string, position: number, score: number, patientName = `Patien
   };
 }
 
-describe('QueueList', () => {
+describe('[component] QueueList', () => {
   let fixture: ComponentFixture<QueueList>;
   let element: HTMLElement;
   let queueService: { getQueue: ReturnType<typeof vi.fn>; saveOrder: ReturnType<typeof vi.fn> };

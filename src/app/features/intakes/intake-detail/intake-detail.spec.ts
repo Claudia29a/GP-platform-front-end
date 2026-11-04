@@ -11,7 +11,7 @@ import { CurrentUser, isStaff } from '../../../core/models/user.model';
 import { IntakeService } from '../../../core/services/intake.service';
 import { IntakeDetail } from './intake-detail';
 
-describe('IntakeDetail', () => {
+describe('[component] IntakeDetail', () => {
   let getById: ReturnType<typeof vi.fn>;
 
   async function render(user: CurrentUser, result: Intake | HttpErrorResponse) {

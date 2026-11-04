@@ -5,7 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { authInterceptor } from './auth.interceptor';
 import { AuthService } from './auth.service';
 
-describe('authInterceptor', () => {
+describe('[unit] authInterceptor', () => {
   let http: HttpClient;
   let backend: HttpTestingController;
   let auth: { token: ReturnType<typeof vi.fn>; signOut: ReturnType<typeof vi.fn> };

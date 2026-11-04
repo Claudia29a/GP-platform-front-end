@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { environment } from '../../../environments/environment';
 import { GoogleIdentityService } from './google-identity.service';
 
-describe('GoogleIdentityService', () => {
+describe('[unit] GoogleIdentityService', () => {
   let service: GoogleIdentityService;
   let accountsId: {
     initialize: ReturnType<typeof vi.fn>;
