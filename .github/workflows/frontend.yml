@@ -1,7 +1,7 @@
 # Front-end pipeline (SAD v2, section 8.2).
 # Every push and pull request: test and build. Pull requests into main and pushes to main also get the
 # SonarQube Cloud analysis and its quality gate (the Free plan analyses nothing else).
-# Then the end-to-end tests prove the acceptance criteria on the whole platform.
+# Then the end-to-end tests prove the acceptance criteria on the whole platform, and Trivy checks for known CVEs.
 # Push to main, only when all of that passed: build the image, push it to GHCR and deploy to Azure.
 # Actions are pinned to a full commit SHA (the version is in the comment), so a moved tag cannot change what runs.
 name: frontend
@@ -51,8 +51,11 @@ jobs:
     needs: build-and-test
     uses: ./.github/workflows/e2e.yml
 
+  cve-scan:
+    uses: ./.github/workflows/cve-scan.yml
+
   deploy:
-    needs: [build-and-test, e2e]
+    needs: [build-and-test, e2e, cve-scan]
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production

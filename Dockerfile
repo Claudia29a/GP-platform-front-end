@@ -13,6 +13,10 @@ RUN npm run build
 
 # Stage 2: serve the built files with nginx (runs as a non-root user on port 8080).
 FROM nginxinc/nginx-unprivileged:1.31-alpine
+# The base image can lag behind Alpine's security fixes. Afterwards back to the image's non-root user.
+USER root
+RUN apk upgrade --no-cache
+USER 101
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist/carebridge-front-end/browser /usr/share/nginx/html
 
