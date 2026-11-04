@@ -90,3 +90,18 @@ End-to-end tests are in `e2e/` in the front-end repository, named after their cr
 | TAC5 public key, forged tokens refused | `e2e` Story 5 TAC5 · `integration` AccountServiceIntegrationTest · `unit` IssuerRoutingJwtDecoderTest |
 | TAC6 identity from the token, staff need a verified address | `e2e` Story 5 TAC6 · `unit` CurrentUserResolverTest |
 | TAC7 the listed automated tests | `e2e` Story 5 AC1 AC2, AC3, AC4, AC5, TAC2, TAC5 · `component` sign-in.spec |
+
+## Story 6: privacy and consent
+
+| Criterion | Proof |
+| --- | --- |
+| AC1 popup after signing in explains what happens and that the data is safe | `e2e` Story 6 AC1 · `component` privacy-consent.spec |
+| AC2 Allow is remembered, and a question can be sent | `e2e` Story 6 AC2 · `unit` PrivacyConsentServiceTest |
+| AC3 Do not allow signs out with an explanation | `e2e` Story 6 AC3 · `component` sign-in.spec |
+| AC4 privacy page without signing in | `e2e` Story 6 AC4 · `component` privacy-page.spec |
+| AC5 permission can be withdrawn | `e2e` Story 6 AC5 · `api` PrivacyConsentControllerTest |
+| AC6 staff are not asked | `e2e` Story 6 AC6 · `unit` PrivacyConsentServiceTest |
+| TAC1 back end refuses a question without permission | `e2e` Story 6 TAC1 · `unit` IntakeServiceTest |
+| TAC2 database shows no answers, names or email addresses | `e2e` Story 6 TAC2 · `integration` IntakeRepositoryTest, AccountServiceIntegrationTest |
+| TAC3 existing data is converted, nothing is lost | `integration` EncryptionMigrationIntegrationTest (both services) |
+| TAC4 changed data or a wrong key is refused | `unit` DataProtectionTest (both services) |

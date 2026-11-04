@@ -27,6 +27,8 @@ export class AuthService {
   readonly isStaff = computed(() => isStaff(this.currentUser()));
   /** Set when the session ended because the token expired, so the sign-in page can say why. */
   readonly sessionExpired = signal(false);
+  /** Set when a patient chose not to allow the use of their data, so the sign-in page can say why they are back. */
+  readonly privacyConsentDeclined = signal(false);
 
   token(): string | null {
     return this.idToken();
@@ -52,6 +54,7 @@ export class AuthService {
     this.idToken.set(token);
     saveToken(token);
     this.sessionExpired.set(false);
+    this.privacyConsentDeclined.set(false);
     try {
       return await this.loadUser();
     } catch (error) {
@@ -60,10 +63,16 @@ export class AuthService {
     }
   }
 
-  signOut(reason?: 'expired'): void {
+  /** Keeps the signed-in user up to date after the patient allowed or withdrew the use of their data. */
+  setPrivacyConsentNeeded(needed: boolean): void {
+    this.currentUser.update((user) => user && { ...user, privacyConsentNeeded: needed });
+  }
+
+  signOut(reason?: 'expired' | 'consent-declined'): void {
     this.clear();
     this.google.disableAutoSelect();
     this.sessionExpired.set(reason === 'expired');
+    this.privacyConsentDeclined.set(reason === 'consent-declined');
     void this.router.navigate(['/sign-in']);
   }
 

@@ -7,6 +7,12 @@
   @if (sessionExpired()) {
     <p class="info" role="status">Your session has ended. Please sign in again.</p>
   }
+  @if (privacyConsentDeclined()) {
+    <p class="info" role="status">
+      You have been signed out, because CareBridge cannot help you without your permission to use your data. Nothing was
+      sent to the practice.
+    </p>
+  }
 
   <div #googleButton class="google-button" [class.hidden]="busy()"></div>
 
@@ -88,6 +94,6 @@
 
   <p class="privacy">
     With Google, CareBridge never sees your Google password. With email, your password is stored only in encrypted
-    (hashed) form.
+    (hashed) form. <a routerLink="/privacy">Read how we handle your data</a>.
   </p>
 </section>

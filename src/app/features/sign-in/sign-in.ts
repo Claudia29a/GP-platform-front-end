@@ -1,7 +1,7 @@
 import { Component, ElementRef, afterNextRender, effect, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { AccountApiService, accountErrorMessage } from '../../core/auth/account-api.service';
@@ -20,7 +20,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 /** Sign in with Google (ADR-006) or with email and password (ADR-010); both end in the same session. */
 @Component({
   selector: 'app-sign-in',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './sign-in.html',
   styleUrl: './sign-in.scss',
 })
@@ -35,6 +35,7 @@ export class SignIn {
   private readonly alert = viewChild<ElementRef<HTMLElement>>('alert');
 
   protected readonly sessionExpired = this.auth.sessionExpired;
+  protected readonly privacyConsentDeclined = this.auth.privacyConsentDeclined;
   protected readonly mode = signal<Mode>('sign-in');
   protected readonly busy = signal(false);
   protected readonly errorMessage = signal<string | null>(null);

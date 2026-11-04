@@ -1,7 +1,8 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { Intake } from '../../../core/models/intake.model';
@@ -34,7 +35,9 @@ describe('[component] IntakeForm', () => {
     submittedAt: '2026-10-14T09:00:00Z',
   };
 
-  const patient: CurrentUser = { id: 'google-anna', name: 'Anna de Vries', email: 'anna@example.com', role: 'PATIENT' };
+  const patient: CurrentUser = { id: 'google-anna', name: 'Anna de Vries', email: 'anna@example.com', role: 'PATIENT', privacyConsentNeeded: false };
+
+  const setPrivacyConsentNeeded = vi.fn();
 
   beforeEach(async () => {
     intakeService = { submit: vi.fn().mockReturnValue(of(savedIntake)) };
@@ -44,7 +47,7 @@ describe('[component] IntakeForm', () => {
       providers: [
         provideRouter([]),
         { provide: IntakeService, useValue: intakeService },
-        { provide: AuthService, useValue: { user: signal<CurrentUser>(patient) } },
+        { provide: AuthService, useValue: { user: signal<CurrentUser>(patient), setPrivacyConsentNeeded } },
       ],
     }).compileComponents();
 
@@ -168,5 +171,24 @@ describe('[component] IntakeForm', () => {
     });
     expect(element.querySelector('h1')?.textContent).toContain('Your question has been sent');
     expect(element.textContent).not.toContain(savedIntake.id);
+  });
+
+  it('shows the permission popup again when the back-end says it is missing', async () => {
+    intakeService.submit.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 403 })));
+
+    await answerRequiredQuestions();
+    await submitForm();
+
+    expect(setPrivacyConsentNeeded).toHaveBeenCalledWith(true);
+    expect(element.textContent).toContain('Please allow the use of your data first');
+  });
+
+  it('explains other failures as usual', async () => {
+    intakeService.submit.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 0 })));
+
+    await answerRequiredQuestions();
+    await submitForm();
+
+    expect(element.textContent).toContain('cannot be reached');
   });
 });

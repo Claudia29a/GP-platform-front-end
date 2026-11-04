@@ -35,5 +35,10 @@ export const routes: Routes = [
     canActivate: [signedInGuard],
     loadComponent: () => import('./features/intakes/intake-detail/intake-detail').then((m) => m.IntakeDetail),
   },
+  {
+    path: 'privacy',
+    title: 'Privacy · CareBridge',
+    loadComponent: () => import('./features/privacy/privacy-page/privacy-page').then((m) => m.PrivacyPage),
+  },
   { path: '**', redirectTo: '' },
 ];

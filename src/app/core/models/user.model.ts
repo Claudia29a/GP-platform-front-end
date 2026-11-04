@@ -6,6 +6,8 @@ export interface CurrentUser {
   name: string;
   email: string;
   role: Role;
+  /** True until a patient has allowed the use of their data. */
+  privacyConsentNeeded: boolean;
 }
 
 export const ROLE_LABELS: Record<Role, string> = {

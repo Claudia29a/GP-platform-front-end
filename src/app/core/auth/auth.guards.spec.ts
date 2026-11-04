@@ -17,7 +17,7 @@ describe('[unit] auth guards', () => {
   });
 
   function signInAs(role: Role): void {
-    user.set({ id: 'id', name: 'Name', email: 'name@example.com', role });
+    user.set({ id: 'id', name: 'Name', email: 'name@example.com', role, privacyConsentNeeded: false });
   }
 
   function run(guard: CanActivateFn): boolean | string {

@@ -42,6 +42,18 @@ describe('[component] App (top bar)', () => {
     expect(page.querySelector('.role')?.textContent).toContain('Patient');
   });
 
+  it('asks a patient for permission until they gave it', async () => {
+    expect((await render({ ...PATIENT, privacyConsentNeeded: true })).querySelector('app-privacy-consent')).not.toBeNull();
+  });
+
+  it('does not ask a patient who gave permission', async () => {
+    expect((await render(PATIENT)).querySelector('app-privacy-consent')).toBeNull();
+  });
+
+  it('links to the privacy page, also before signing in', async () => {
+    expect((await render(null)).querySelector('footer a')?.getAttribute('href')).toBe('/privacy');
+  });
+
   it('shows practice staff the queue', async () => {
     const page = await render(GP);
 

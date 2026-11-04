@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { createDecipheriv } from 'node:crypto';
 
 import { APIRequestContext, Page, expect } from '@playwright/test';
 
@@ -16,15 +17,59 @@ function sql(service: 'account-db' | 'intake-db', database: string, statement: s
   });
 }
 
+/** The rows exactly as they are in the database, which is what someone with a copy of it would see. */
+export function storedRows(service: 'account-db' | 'intake-db', database: string, statement: string): string[][] {
+  const output = execFileSync(
+    'docker',
+    ['compose', 'exec', '-T', service, 'psql', '-U', database, '-d', database, '-AtF', '\t', '-c', statement],
+    { cwd: BACKEND_DIR, encoding: 'utf8' },
+  );
+  return output.split('\n').filter(Boolean).map((line) => line.split('\t'));
+}
+
+function dataKey(service: 'account-service' | 'intake-service', name: string): Buffer {
+  const key = execFileSync('docker', ['compose', 'exec', '-T', service, 'printenv', name], { cwd: BACKEND_DIR, encoding: 'utf8' });
+  return Buffer.from(key.trim(), 'base64');
+}
+
+/** Personal data is encrypted, so a test needs the key to recognise its own rows: 12 bytes IV, the text, 16 bytes tag. */
+function decrypt(stored: string, key: Buffer): string {
+  const data = Buffer.from(stored, 'base64');
+  const decipher = createDecipheriv('aes-256-gcm', key, data.subarray(0, 12));
+  decipher.setAuthTag(data.subarray(data.length - 16));
+  return Buffer.concat([decipher.update(data.subarray(12, data.length - 16)), decipher.final()]).toString('utf8');
+}
+
+function accountIdsWith(matches: (email: string) => boolean): string[] {
+  const key = dataKey('account-service', 'ACCOUNT_DATA_KEY');
+  return storedRows('account-db', 'account', 'select id, email from account')
+    .filter(([, email]) => matches(decrypt(email, key)))
+    .map(([id]) => id);
+}
+
+function quoted(ids: string[]): string {
+  return ids.map((id) => `'${id}'`).join(',');
+}
+
 /** Removes everything earlier test runs created; real accounts and questions are left alone. */
 export function cleanTestData(): void {
-  sql('account-db', 'account', "delete from account where email like 'e2e-%'");
-  sql('intake-db', 'intake', "delete from intake where patient_email like 'e2e-%'");
+  const accounts = accountIdsWith((email) => email.startsWith('e2e-'));
+  if (accounts.length) {
+    sql('account-db', 'account', `delete from account where id in (${quoted(accounts)})`);
+  }
+  const key = dataKey('intake-service', 'INTAKE_DATA_KEY');
+  const questions = storedRows('intake-db', 'intake', 'select id, patient_email from intake')
+    .filter(([, email]) => decrypt(email, key).startsWith('e2e-'))
+    .map(([id]) => id);
+  if (questions.length) {
+    sql('intake-db', 'intake', `delete from intake where id in (${quoted(questions)})`);
+  }
 }
 
 /** Email verification does not exist yet, so a test marks a staff address as verified in the database. */
 export function markEmailVerified(email: string): void {
-  sql('account-db', 'account', `update account set email_verified = true where email = '${email}'`);
+  const accounts = accountIdsWith((stored) => stored === email);
+  sql('account-db', 'account', `update account set email_verified = true where id in (${quoted(accounts)})`);
 }
 
 let counter = 0;
@@ -32,9 +77,20 @@ export function uniqueEmail(): string {
   return `e2e-patient-${Date.now()}-${++counter}@example.com`;
 }
 
-export async function createAccount(request: APIRequestContext, email: string, name = 'E2E Patient'): Promise<void> {
-  const response = await request.post('/api/account/accounts', { data: { name, email, password: PASSWORD } });
+/** Most stories are not about privacy, so a new patient has already allowed the use of their data, unless a test says not. */
+export async function createAccount(
+  request: APIRequestContext,
+  email: string,
+  options: { allowPrivacy?: boolean } = {},
+): Promise<void> {
+  const response = await request.post('/api/account/accounts', { data: { name: 'E2E Patient', email, password: PASSWORD } });
   expect(response.status()).toBe(201);
+  if (options.allowPrivacy !== false) {
+    const allowed = await request.post('/api/privacy-consent', {
+      headers: { Authorization: `Bearer ${await tokenFor(request, email)}` },
+    });
+    expect(allowed.status()).toBe(204);
+  }
 }
 
 export async function tokenFor(request: APIRequestContext, email: string): Promise<string> {

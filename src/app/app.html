@@ -27,3 +27,11 @@
 <main>
   <router-outlet />
 </main>
+
+<footer class="footer">
+  <a routerLink="/privacy">Privacy</a>
+</footer>
+
+@if (auth.user()?.privacyConsentNeeded) {
+  <app-privacy-consent />
+}

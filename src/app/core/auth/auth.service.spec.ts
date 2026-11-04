@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 
+import { environment } from '../../../environments/environment';
 import { CurrentUser } from '../models/user.model';
 import { AuthService, isExpired } from './auth.service';
 import { GoogleIdentityService } from './google-identity.service';
@@ -33,7 +34,7 @@ describe('[unit] AuthService', () => {
   let auth: AuthService;
   let http: HttpTestingController;
   let google: { disableAutoSelect: ReturnType<typeof vi.fn> };
-  const gp: CurrentUser = { id: 'google-gp', name: 'Dr. Jansen', email: 'gp@example.com', role: 'GP' };
+  const gp: CurrentUser = { id: 'google-gp', name: 'Dr. Jansen', email: 'gp@example.com', role: 'GP', privacyConsentNeeded: false };
 
   beforeEach(() => {
     sessionStorage.clear();
@@ -86,5 +87,24 @@ describe('[unit] AuthService', () => {
     expect(auth.sessionExpired()).toBe(true);
     expect(google.disableAutoSelect).toHaveBeenCalled();
     expect(navigate).toHaveBeenCalledWith(['/sign-in']);
+  });
+
+  it('remembers the privacy choice on the signed-in user', async () => {
+    const signingIn = auth.signIn('a-token');
+    http.expectOne(`${environment.apiUrl}/me`).flush({ ...gp, privacyConsentNeeded: true });
+    await signingIn;
+
+    auth.setPrivacyConsentNeeded(false);
+
+    expect(auth.user()?.privacyConsentNeeded).toBe(false);
+  });
+
+  it('remembers why the patient was signed out after declining', () => {
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    auth.signOut('consent-declined');
+
+    expect(auth.privacyConsentDeclined()).toBe(true);
+    expect(auth.sessionExpired()).toBe(false);
   });
 });

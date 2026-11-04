@@ -13,13 +13,21 @@ import { SignIn } from './sign-in';
 describe('[component] SignIn', () => {
   let fixture: ComponentFixture<SignIn>;
   let page: HTMLElement;
-  let auth: { signIn: ReturnType<typeof vi.fn>; sessionExpired: ReturnType<typeof signal<boolean>> };
+  let auth: {
+    signIn: ReturnType<typeof vi.fn>;
+    sessionExpired: ReturnType<typeof signal<boolean>>;
+    privacyConsentDeclined: ReturnType<typeof signal<boolean>>;
+  };
   let google: { renderButton: ReturnType<typeof vi.fn> };
   let accounts: { register: ReturnType<typeof vi.fn>; login: ReturnType<typeof vi.fn> };
   let onGoogleSignIn: (token: string) => void;
 
-  async function render(options: { expired?: boolean; googleFails?: boolean } = {}) {
-    auth = { signIn: vi.fn().mockResolvedValue(PATIENT), sessionExpired: signal(options.expired ?? false) };
+  async function render(options: { expired?: boolean; declined?: boolean; googleFails?: boolean } = {}) {
+    auth = {
+      signIn: vi.fn().mockResolvedValue(PATIENT),
+      sessionExpired: signal(options.expired ?? false),
+      privacyConsentDeclined: signal(options.declined ?? false),
+    };
     google = {
       renderButton: vi.fn((_parent: HTMLElement, callback: (token: string) => void) => {
         onGoogleSignIn = callback;
@@ -64,6 +72,18 @@ describe('[component] SignIn', () => {
 
   const errors = () => Array.from(page.querySelectorAll('.error'), (el) => el.textContent!.trim());
   const rules = () => Array.from(page.querySelectorAll('.rules li'), (li) => ({ text: li.textContent!, met: li.classList.contains('met') }));
+
+  it('explains why a patient who did not allow the use of their data is back here', async () => {
+    await render({ declined: true });
+
+    expect(page.querySelector('.info')?.textContent).toContain('You have been signed out');
+  });
+
+  it('links to the privacy page', async () => {
+    await render();
+
+    expect(page.querySelector('.privacy a')?.getAttribute('href')).toBe('/privacy');
+  });
 
   describe('with Google', () => {
     it('shows the Google button in its place', async () => {
