@@ -6,7 +6,7 @@ import { CurrentUser, Role } from '../models/user.model';
 import { homeGuard, roleGuard, signedInGuard } from './auth.guards';
 import { AuthService } from './auth.service';
 
-describe('auth guards', () => {
+describe('[unit] auth guards', () => {
   const user = signal<CurrentUser | null>(null);
 
   beforeEach(() => {
@@ -17,7 +17,7 @@ describe('auth guards', () => {
   });
 
   function signInAs(role: Role): void {
-    user.set({ id: 'id', name: 'Name', email: 'name@example.com', role });
+    user.set({ id: 'id', name: 'Name', email: 'name@example.com', role, privacyConsentNeeded: false });
   }
 
   function run(guard: CanActivateFn): boolean | string {

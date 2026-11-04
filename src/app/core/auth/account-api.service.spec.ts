@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { AccountApiService, accountErrorMessage } from './account-api.service';
 
-describe('AccountApiService', () => {
+describe('[unit] AccountApiService', () => {
   let service: AccountApiService;
   let http: HttpTestingController;
 
@@ -35,7 +35,7 @@ describe('AccountApiService', () => {
   });
 });
 
-describe('accountErrorMessage', () => {
+describe('[unit] accountErrorMessage', () => {
   const forStatus = (status: number) => accountErrorMessage(new HttpErrorResponse({ status }));
 
   it('explains each answer of the Account Service', () => {

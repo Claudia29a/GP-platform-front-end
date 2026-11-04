@@ -1,0 +1,16 @@
+# Dependabot proposes updates as pull requests, so they go through the same tests and quality gate.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 3
+    groups: { all: { patterns: ['*'] } }
+  - package-ecosystem: docker
+    directory: /
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 2
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly }
+    groups: { all: { patterns: ['*'] } }

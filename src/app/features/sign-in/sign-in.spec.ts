@@ -10,16 +10,24 @@ import { AuthService } from '../../core/auth/auth.service';
 import { GoogleIdentityService } from '../../core/auth/google-identity.service';
 import { SignIn } from './sign-in';
 
-describe('SignIn', () => {
+describe('[component] SignIn', () => {
   let fixture: ComponentFixture<SignIn>;
   let page: HTMLElement;
-  let auth: { signIn: ReturnType<typeof vi.fn>; sessionExpired: ReturnType<typeof signal<boolean>> };
+  let auth: {
+    signIn: ReturnType<typeof vi.fn>;
+    sessionExpired: ReturnType<typeof signal<boolean>>;
+    privacyConsentDeclined: ReturnType<typeof signal<boolean>>;
+  };
   let google: { renderButton: ReturnType<typeof vi.fn> };
   let accounts: { register: ReturnType<typeof vi.fn>; login: ReturnType<typeof vi.fn> };
   let onGoogleSignIn: (token: string) => void;
 
-  async function render(options: { expired?: boolean; googleFails?: boolean } = {}) {
-    auth = { signIn: vi.fn().mockResolvedValue(PATIENT), sessionExpired: signal(options.expired ?? false) };
+  async function render(options: { expired?: boolean; declined?: boolean; googleFails?: boolean } = {}) {
+    auth = {
+      signIn: vi.fn().mockResolvedValue(PATIENT),
+      sessionExpired: signal(options.expired ?? false),
+      privacyConsentDeclined: signal(options.declined ?? false),
+    };
     google = {
       renderButton: vi.fn((_parent: HTMLElement, callback: (token: string) => void) => {
         onGoogleSignIn = callback;
@@ -64,6 +72,18 @@ describe('SignIn', () => {
 
   const errors = () => Array.from(page.querySelectorAll('.error'), (el) => el.textContent!.trim());
   const rules = () => Array.from(page.querySelectorAll('.rules li'), (li) => ({ text: li.textContent!, met: li.classList.contains('met') }));
+
+  it('explains why a patient who did not allow the use of their data is back here', async () => {
+    await render({ declined: true });
+
+    expect(page.querySelector('.info')?.textContent).toContain('You have been signed out');
+  });
+
+  it('links to the privacy page', async () => {
+    await render();
+
+    expect(page.querySelector('.privacy a')?.getAttribute('href')).toBe('/privacy');
+  });
 
   describe('with Google', () => {
     it('shows the Google button in its place', async () => {
@@ -127,7 +147,31 @@ describe('SignIn', () => {
       await submit();
 
       expect(accounts.login).not.toHaveBeenCalled();
-      expect(errors()).toEqual(['Please enter a valid email address.', 'Please enter your password.']);
+      expect(errors()).toEqual(['Please enter your email address.', 'Please enter your password.']);
+    });
+
+    it('says when the email address is mistyped', async () => {
+      await render();
+
+      await type('signin-email', 'not-an-email');
+      await submit();
+
+      expect(errors()).toContain('Please enter a valid email address.');
+      expect(accounts.login).not.toHaveBeenCalled();
+    });
+
+    it('scrolls a sign-in error into view, so it is seen on a small screen', async () => {
+      await render();
+      const scrollIntoView = vi.fn();
+      Element.prototype.scrollIntoView = scrollIntoView;
+      accounts.login.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 401 })));
+
+      await type('signin-email', 'bram@example.com');
+      await type('signin-password', 'Wrong123');
+      await submit();
+
+      expect(scrollIntoView).toHaveBeenCalled();
+      delete (Element.prototype as Partial<Element>).scrollIntoView;
     });
 
     it('says the same thing for a wrong email or a wrong password', async () => {

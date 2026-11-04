@@ -11,7 +11,7 @@ import { CurrentUser, isStaff } from '../../../core/models/user.model';
 import { IntakeService } from '../../../core/services/intake.service';
 import { IntakeDetail } from './intake-detail';
 
-describe('IntakeDetail', () => {
+describe('[component] IntakeDetail', () => {
   let getById: ReturnType<typeof vi.fn>;
 
   async function render(user: CurrentUser, result: Intake | HttpErrorResponse) {
@@ -36,6 +36,7 @@ describe('IntakeDetail', () => {
     const text = page.textContent!;
 
     expect(getById).toHaveBeenCalledWith('question-1');
+    expect(page.querySelector('.badge')?.textContent).toBe('In review');
     expect(text).toContain('Skin');
     expect(text).toContain('1–4 weeks');
     expect(text).toContain('4 / 10');

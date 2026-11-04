@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 
-import { environment } from '../../../environments/environment';
+import { RuntimeConfigService } from '../config/runtime-config.service';
 import { GoogleIdentityService } from './google-identity.service';
 
-describe('GoogleIdentityService', () => {
+describe('[unit] GoogleIdentityService', () => {
   let service: GoogleIdentityService;
+  let config: { googleClientId: string | null };
   let accountsId: {
     initialize: ReturnType<typeof vi.fn>;
     renderButton: ReturnType<typeof vi.fn>;
@@ -18,6 +19,8 @@ describe('GoogleIdentityService', () => {
 
   beforeEach(() => {
     accountsId = { initialize: vi.fn(), renderButton: vi.fn(), disableAutoSelect: vi.fn() };
+    config = { googleClientId: 'client-of-this-environment' };
+    TestBed.configureTestingModule({ providers: [{ provide: RuntimeConfigService, useValue: config }] });
     service = TestBed.inject(GoogleIdentityService);
   });
 
@@ -33,7 +36,7 @@ describe('GoogleIdentityService', () => {
 
     await service.renderButton(parent, onSignIn);
 
-    expect(accountsId.initialize).toHaveBeenCalledWith(expect.objectContaining({ client_id: environment.googleClientId }));
+    expect(accountsId.initialize).toHaveBeenCalledWith(expect.objectContaining({ client_id: 'client-of-this-environment' }));
     expect(accountsId.renderButton).toHaveBeenCalledWith(parent, expect.objectContaining({ locale: 'en' }));
 
     const { callback } = accountsId.initialize.mock.calls[0][0];
@@ -59,6 +62,13 @@ describe('GoogleIdentityService', () => {
     document.head.querySelector<HTMLScriptElement>('script[src*="accounts.google.com"]')!.onerror!(new Event('error'));
 
     await expect(shown).rejects.toThrow('Google sign-in could not be loaded');
+  });
+
+  it('reports when no client ID is configured, without loading anything from Google', async () => {
+    config.googleClientId = null;
+
+    await expect(service.renderButton(document.createElement('div'), vi.fn())).rejects.toThrow('not configured');
+    expect(document.head.querySelector('script[src*="accounts.google.com"]')).toBeNull();
   });
 
   it('turns off automatic sign-in after signing out', () => {

@@ -7,7 +7,7 @@ import { App } from './app';
 import { AuthService } from './core/auth/auth.service';
 import { CurrentUser, isStaff } from './core/models/user.model';
 
-describe('App (top bar)', () => {
+describe('[component] App (top bar)', () => {
   let signOut: ReturnType<typeof vi.fn>;
 
   async function render(user: CurrentUser | null) {
@@ -40,6 +40,18 @@ describe('App (top bar)', () => {
     expect(menu(page)).toEqual(['Ask a question', 'My questions']);
     expect(page.querySelector('.name')?.textContent).toContain('Anna de Vries');
     expect(page.querySelector('.role')?.textContent).toContain('Patient');
+  });
+
+  it('asks a patient for permission until they gave it', async () => {
+    expect((await render({ ...PATIENT, privacyConsentNeeded: true })).querySelector('app-privacy-consent')).not.toBeNull();
+  });
+
+  it('does not ask a patient who gave permission', async () => {
+    expect((await render(PATIENT)).querySelector('app-privacy-consent')).toBeNull();
+  });
+
+  it('links to the privacy page, also before signing in', async () => {
+    expect((await render(null)).querySelector('footer a')?.getAttribute('href')).toBe('/privacy');
   });
 
   it('shows practice staff the queue', async () => {

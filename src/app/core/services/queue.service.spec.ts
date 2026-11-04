@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { QueueService } from './queue.service';
 
-describe('QueueService', () => {
+describe('[unit] QueueService', () => {
   let service: QueueService;
   let http: HttpTestingController;
 

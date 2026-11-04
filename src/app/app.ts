@@ -3,10 +3,11 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { AuthService } from './core/auth/auth.service';
 import { ROLE_LABELS } from './core/models/user.model';
+import { PrivacyConsent } from './features/privacy/privacy-consent/privacy-consent';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, PrivacyConsent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

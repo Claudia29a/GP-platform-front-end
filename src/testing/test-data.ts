@@ -19,12 +19,12 @@ export function testIntake(overrides: Partial<Intake> = {}): Intake {
     triedTreatment: false,
     treatmentTried: null,
     description: 'Itchy rash on my left arm',
-    status: 'SUBMITTED',
+    status: 'IN_REVIEW',
     submittedAt: '2026-10-14T09:00:00Z',
     ...overrides,
   };
 }
 
-export const PATIENT: CurrentUser = { id: 'google-anna', name: 'Anna de Vries', email: 'anna@example.com', role: 'PATIENT' };
-export const ASSISTANT: CurrentUser = { id: 'google-sam', name: 'Sam Bakker', email: 'sam@example.com', role: 'GP_ASSISTANT' };
-export const GP: CurrentUser = { id: 'google-gp', name: 'Dr. Jansen', email: 'gp@example.com', role: 'GP' };
+export const PATIENT: CurrentUser = { id: 'google-anna', name: 'Anna de Vries', email: 'anna@example.com', role: 'PATIENT', privacyConsentNeeded: false };
+export const ASSISTANT: CurrentUser = { id: 'google-sam', name: 'Sam Bakker', email: 'sam@example.com', role: 'GP_ASSISTANT', privacyConsentNeeded: false };
+export const GP: CurrentUser = { id: 'google-gp', name: 'Dr. Jansen', email: 'gp@example.com', role: 'GP', privacyConsentNeeded: false };

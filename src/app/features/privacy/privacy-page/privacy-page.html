@@ -1,0 +1,64 @@
+<section class="card">
+  <h1>Privacy at CareBridge</h1>
+  <p class="version">Version of 4 November 2026</p>
+
+  <p class="notice">
+    <strong>CareBridge is a student project.</strong> Please do not enter real medical information.
+  </p>
+
+  <h2>What we store</h2>
+  <ul>
+    <li>Your name and email address.</li>
+    <li>Your answers: the area of your complaint, how long you have had it, how much it bothers you, your symptoms, medication, treatment and your description.</li>
+    <li>When you sent your question, and when you gave permission.</li>
+    <li>If you use email to sign in: a hash of your password, never the password itself.</li>
+    <li>Technical logs with IP addresses, to find faults.</li>
+  </ul>
+
+  <h2>Why we need it</h2>
+  <p>
+    Your practice needs your answers to review your question, and your name and email address to know who is asking.
+    We use your answers to calculate a score that puts the most urgent questions first. Staff can always change that
+    order, and a person reviews every question.
+  </p>
+  <p>Health data needs your explicit permission, so we ask for it before your first question.</p>
+
+  <h2>Who can see it</h2>
+  <ul>
+    <li>You see your own questions.</li>
+    <li>The GP and the GP assistants of the practice see all questions.</li>
+    <li>Microsoft Azure hosts CareBridge in Sweden.</li>
+    <li>
+      Google handles the sign-in if you choose it. The sign-in page loads a script from Google, so Google can see your
+      IP address, even if you use your email address.
+    </li>
+  </ul>
+  <p>We never sell your data or use it for advertising.</p>
+
+  <h2>How your data is protected</h2>
+  <ul>
+    <li>Your answers, name and email address are stored encrypted, so a copy of the database does not show them.</li>
+    <li>Your account ID and the email address used for signing in are stored as a hash.</li>
+    <li>Passwords are stored as a BCrypt hash, and an account locks after too many wrong passwords.</li>
+    <li>Every connection is encrypted, and every question needs a signed-in user with the right role.</li>
+  </ul>
+
+  <h2>How long we keep it</h2>
+  <p>
+    Questions and accounts are not deleted automatically yet. Logs are kept for 30 days and backups for 7 days.
+  </p>
+
+  <h2>Your rights</h2>
+  <p>
+    You can see your questions under My questions. You also have the right to a copy of your data, and to have it
+    corrected or deleted. These are not in the app yet, so please ask your practice. You can withdraw your permission
+    at any time; what you already sent stays stored until it is deleted.
+  </p>
+
+  @if (canWithdraw()) {
+    <button type="button" class="button secondary" [disabled]="busy()" (click)="withdraw()">Withdraw my permission</button>
+  }
+  @if (errorMessage(); as message) {
+    <p class="alert" role="alert">{{ message }}</p>
+  }
+</section>

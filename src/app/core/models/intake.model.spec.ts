@@ -1,6 +1,6 @@
 import { areaLabel, durationLabel, symptomLabels } from './intake.model';
 
-describe('intake labels', () => {
+describe('[unit] intake labels', () => {
   it('shows the area in plain words, or what the patient wrote for Other', () => {
     expect(areaLabel({ complaintArea: 'CHEST_BREATHING', complaintAreaOther: null })).toBe('Chest & breathing');
     expect(areaLabel({ complaintArea: 'OTHER', complaintAreaOther: 'Ears' })).toBe('Other: Ears');

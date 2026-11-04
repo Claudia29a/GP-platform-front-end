@@ -1,7 +1,8 @@
 # Front-end pipeline (SAD v2, section 8.2).
 # Every push and pull request: test and build. Pull requests into main and pushes to main also get the
 # SonarQube Cloud analysis and its quality gate (the Free plan analyses nothing else).
-# Push to main: build the image, push it to GHCR and deploy to Azure.
+# Then the end-to-end tests prove the acceptance criteria on the whole platform, and Trivy checks for known CVEs.
+# Push to main, only when all of that passed: build the image, push it to GHCR and deploy to Azure.
 # Actions are pinned to a full commit SHA (the version is in the comment), so a moved tag cannot change what runs.
 name: frontend
 
@@ -11,13 +12,14 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE: ghcr.io/claudia29a/carebridge-frontend
+  IMAGE: ${{ vars.IMAGE_PREFIX }}/carebridge-frontend
   CONTAINER_APP: frontend
-  RESOURCE_GROUP: rg-carebridge
-  # Identifiers of the deploy identity, not secrets. Login works without a password via OpenID Connect.
-  AZURE_CLIENT_ID: 3897f62c-d4d1-4fbb-ade8-c6925809928e
-  AZURE_TENANT_ID: c66b6765-b794-4a2b-84ed-845b341c086a
-  AZURE_SUBSCRIPTION_ID: abe892ae-8030-495a-9ed4-6a09ed339e6a
+  RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+  # Settings of this deployment live in GitHub (Settings > Secrets and variables > Actions > Variables), not in the code.
+  # Login to Azure works without a password via OpenID Connect.
+  AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
 jobs:
   build-and-test:
@@ -45,8 +47,15 @@ jobs:
       - name: Build
         run: npm run build
 
-  deploy:
+  e2e:
     needs: build-and-test
+    uses: ./.github/workflows/e2e.yml
+
+  cve-scan:
+    uses: ./.github/workflows/cve-scan.yml
+
+  deploy:
+    needs: [build-and-test, e2e, cve-scan]
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production

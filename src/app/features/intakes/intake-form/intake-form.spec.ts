@@ -1,7 +1,8 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { Intake } from '../../../core/models/intake.model';
@@ -9,7 +10,7 @@ import { CurrentUser } from '../../../core/models/user.model';
 import { IntakeService } from '../../../core/services/intake.service';
 import { IntakeForm } from './intake-form';
 
-describe('IntakeForm', () => {
+describe('[component] IntakeForm', () => {
   let fixture: ComponentFixture<IntakeForm>;
   let element: HTMLElement;
   let intakeService: { submit: ReturnType<typeof vi.fn> };
@@ -30,11 +31,13 @@ describe('IntakeForm', () => {
     triedTreatment: false,
     treatmentTried: null,
     description: 'Itchy rash on my arm',
-    status: 'SUBMITTED',
+    status: 'IN_REVIEW',
     submittedAt: '2026-10-14T09:00:00Z',
   };
 
-  const patient: CurrentUser = { id: 'google-anna', name: 'Anna de Vries', email: 'anna@example.com', role: 'PATIENT' };
+  const patient: CurrentUser = { id: 'google-anna', name: 'Anna de Vries', email: 'anna@example.com', role: 'PATIENT', privacyConsentNeeded: false };
+
+  const setPrivacyConsentNeeded = vi.fn();
 
   beforeEach(async () => {
     intakeService = { submit: vi.fn().mockReturnValue(of(savedIntake)) };
@@ -44,7 +47,7 @@ describe('IntakeForm', () => {
       providers: [
         provideRouter([]),
         { provide: IntakeService, useValue: intakeService },
-        { provide: AuthService, useValue: { user: signal<CurrentUser>(patient) } },
+        { provide: AuthService, useValue: { user: signal<CurrentUser>(patient), setPrivacyConsentNeeded } },
       ],
     }).compileComponents();
 
@@ -100,6 +103,16 @@ describe('IntakeForm', () => {
       'Please answer yes or no.',
       'Please describe your question.',
     ]);
+  });
+
+  it('links every error to its question for screen readers', async () => {
+    await submitForm();
+
+    const errorIds = Array.from(element.querySelectorAll('.error'), (el) => el.id).filter(Boolean);
+    expect(errorIds).toHaveLength(6);
+    for (const id of errorIds) {
+      expect(element.querySelector(`[aria-describedby~="${id}"]`)).not.toBeNull();
+    }
   });
 
   it('only asks "where exactly" when the area is Other, and then requires it', async () => {
@@ -158,5 +171,24 @@ describe('IntakeForm', () => {
     });
     expect(element.querySelector('h1')?.textContent).toContain('Your question has been sent');
     expect(element.textContent).not.toContain(savedIntake.id);
+  });
+
+  it('shows the permission popup again when the back-end says it is missing', async () => {
+    intakeService.submit.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 403 })));
+
+    await answerRequiredQuestions();
+    await submitForm();
+
+    expect(setPrivacyConsentNeeded).toHaveBeenCalledWith(true);
+    expect(element.textContent).toContain('Please allow the use of your data first');
+  });
+
+  it('explains other failures as usual', async () => {
+    intakeService.submit.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 0 })));
+
+    await answerRequiredQuestions();
+    await submitForm();
+
+    expect(element.textContent).toContain('cannot be reached');
   });
 });

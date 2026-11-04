@@ -11,7 +11,7 @@ import { CurrentUser, isStaff } from '../../../core/models/user.model';
 import { IntakeService } from '../../../core/services/intake.service';
 import { IntakeList } from './intake-list';
 
-describe('IntakeList', () => {
+describe('[component] IntakeList', () => {
   async function render(user: CurrentUser, intakes: Intake[] | HttpErrorResponse) {
     const getAll = vi.fn().mockReturnValue(intakes instanceof HttpErrorResponse ? throwError(() => intakes) : of(intakes));
     const current = signal(user);

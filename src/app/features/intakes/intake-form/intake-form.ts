@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import {
@@ -90,6 +91,16 @@ export class IntakeForm {
     return control.invalid && control.touched;
   }
 
+  /** Only a missing permission refuses a patient here, for example after withdrawing it in another tab. */
+  private showSendError(error: unknown): void {
+    if (error instanceof HttpErrorResponse && error.status === 403) {
+      this.auth.setPrivacyConsentNeeded(true);
+      this.errorMessage.set('Please allow the use of your data first, then send your question again.');
+      return;
+    }
+    this.errorMessage.set(httpErrorMessage(error));
+  }
+
   protected submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -107,7 +118,7 @@ export class IntakeForm {
           this.submitted.set(intake);
           this.form.reset();
         },
-        error: (error) => this.errorMessage.set(httpErrorMessage(error)),
+        error: (error) => this.showSendError(error),
       });
   }
 

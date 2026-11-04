@@ -1,0 +1,30 @@
+<dialog #dialog aria-labelledby="privacy-title" (cancel)="$event.preventDefault()" (close)="open()">
+  <h2 id="privacy-title">Your privacy at CareBridge</h2>
+  <p>
+    To ask a question, we need your permission to use your data. We save your name, your email address and your
+    answers, so your GP practice can review your question and put the most urgent questions first.
+  </p>
+
+  <h3>Your data is safe</h3>
+  <ul>
+    <li>Only you and the staff of your practice can read your questions.</li>
+    <li>Your answers, name and email address are stored encrypted.</li>
+    <li>Your password is never stored, only a hash of it.</li>
+    <li>Everything you send travels over a secure connection.</li>
+    <li>We never sell your data or use it for advertising.</li>
+  </ul>
+
+  <p>
+    You can change your mind at any time on the
+    <a routerLink="/privacy" target="_blank" rel="noopener">privacy page</a>, which also explains everything in full.
+  </p>
+
+  @if (errorMessage(); as message) {
+    <p class="alert" role="alert">{{ message }}</p>
+  }
+
+  <div class="actions">
+    <button type="button" class="button" [disabled]="busy()" (click)="allow()">Allow</button>
+    <button type="button" class="button secondary" [disabled]="busy()" (click)="decline()">Do not allow</button>
+  </div>
+</dialog>

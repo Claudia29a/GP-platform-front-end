@@ -27,7 +27,7 @@
       <section class="step" aria-labelledby="step-problem">
         <h2 id="step-problem"><span class="step-number">1</span> Your problem</h2>
 
-        <fieldset [class.invalid]="showError(form.controls.complaintArea)">
+        <fieldset [class.invalid]="showError(form.controls.complaintArea)" aria-describedby="complaintArea-error">
           <legend>Where is the problem?</legend>
           <div class="choices">
             @for (area of areas; track area.value) {
@@ -40,18 +40,18 @@
           @if (areaIsOther()) {
             <div class="follow-up">
               <label for="complaintAreaOther">Where exactly?</label>
-              <input id="complaintAreaOther" type="text" formControlName="complaintAreaOther" [maxlength]="maxLength.complaintAreaOther" placeholder="For example: ears" />
+              <input id="complaintAreaOther" type="text" aria-describedby="complaintAreaOther-error" formControlName="complaintAreaOther" [maxlength]="maxLength.complaintAreaOther" placeholder="For example: ears" />
               @if (showError(form.controls.complaintAreaOther)) {
-                <p class="error">Please say where the problem is.</p>
+                <p id="complaintAreaOther-error" class="error">Please say where the problem is.</p>
               }
             </div>
           }
           @if (showError(form.controls.complaintArea)) {
-            <p class="error">Please choose where the problem is.</p>
+            <p id="complaintArea-error" class="error">Please choose where the problem is.</p>
           }
         </fieldset>
 
-        <fieldset [class.invalid]="showError(form.controls.duration)">
+        <fieldset [class.invalid]="showError(form.controls.duration)" aria-describedby="duration-error">
           <legend>How long has it been going on?</legend>
           <div class="choices">
             @for (duration of durations; track duration.value) {
@@ -62,11 +62,11 @@
             }
           </div>
           @if (showError(form.controls.duration)) {
-            <p class="error">Please choose how long it has been going on.</p>
+            <p id="duration-error" class="error">Please choose how long it has been going on.</p>
           }
         </fieldset>
 
-        <fieldset [class.invalid]="showError(form.controls.severity)">
+        <fieldset [class.invalid]="showError(form.controls.severity)" aria-describedby="severity-error">
           <legend>How much does it bother you?</legend>
           <div class="scale">
             @for (level of severities; track level) {
@@ -81,7 +81,7 @@
             <span>10 = worst imaginable</span>
           </div>
           @if (showError(form.controls.severity)) {
-            <p class="error">Please choose a number from 1 to 10.</p>
+            <p id="severity-error" class="error">Please choose a number from 1 to 10.</p>
           }
         </fieldset>
       </section>
@@ -112,7 +112,7 @@
       <section class="step" aria-labelledby="step-treatment">
         <h2 id="step-treatment"><span class="step-number">3</span> Medication and treatment</h2>
 
-        <fieldset [class.invalid]="showError(form.controls.takesMedication)">
+        <fieldset [class.invalid]="showError(form.controls.takesMedication)" aria-describedby="takesMedication-error">
           <legend>Do you currently take any medication or treatment?</legend>
           <div class="choices yes-no">
             <label class="choice"><input type="radio" name="takesMedication" formControlName="takesMedication" [value]="true" id="medication-yes" /> Yes</label>
@@ -121,18 +121,18 @@
           @if (takesMedication()) {
             <div class="follow-up">
               <label for="currentMedication">Which medication or treatment?</label>
-              <textarea id="currentMedication" formControlName="currentMedication" rows="2" [maxlength]="maxLength.currentMedication" placeholder="For example: blood pressure tablets, once a day"></textarea>
+              <textarea id="currentMedication" aria-describedby="currentMedication-error" formControlName="currentMedication" rows="2" [maxlength]="maxLength.currentMedication" placeholder="For example: blood pressure tablets, once a day"></textarea>
               @if (showError(form.controls.currentMedication)) {
-                <p class="error">Please say which medication or treatment you take.</p>
+                <p id="currentMedication-error" class="error">Please say which medication or treatment you take.</p>
               }
             </div>
           }
           @if (showError(form.controls.takesMedication)) {
-            <p class="error">Please answer yes or no.</p>
+            <p id="takesMedication-error" class="error">Please answer yes or no.</p>
           }
         </fieldset>
 
-        <fieldset [class.invalid]="showError(form.controls.triedTreatment)">
+        <fieldset [class.invalid]="showError(form.controls.triedTreatment)" aria-describedby="triedTreatment-error">
           <legend>Have you already tried anything for this problem?</legend>
           <div class="choices yes-no">
             <label class="choice"><input type="radio" name="triedTreatment" formControlName="triedTreatment" [value]="true" id="tried-yes" /> Yes</label>
@@ -141,14 +141,14 @@
           @if (triedTreatment()) {
             <div class="follow-up">
               <label for="treatmentTried">What did you try?</label>
-              <textarea id="treatmentTried" formControlName="treatmentTried" rows="2" [maxlength]="maxLength.treatmentTried" placeholder="For example: paracetamol and rest"></textarea>
+              <textarea id="treatmentTried" aria-describedby="treatmentTried-error" formControlName="treatmentTried" rows="2" [maxlength]="maxLength.treatmentTried" placeholder="For example: paracetamol and rest"></textarea>
               @if (showError(form.controls.treatmentTried)) {
-                <p class="error">Please say what you already tried.</p>
+                <p id="treatmentTried-error" class="error">Please say what you already tried.</p>
               }
             </div>
           }
           @if (showError(form.controls.triedTreatment)) {
-            <p class="error">Please answer yes or no.</p>
+            <p id="triedTreatment-error" class="error">Please answer yes or no.</p>
           }
         </fieldset>
       </section>
@@ -165,10 +165,10 @@
             rows="6"
             placeholder="For example: I have had an itchy rash on my arm for two weeks. Should I come in?"
             [attr.aria-invalid]="showError(form.controls.description)"
-            aria-describedby="description-counter"
+            aria-describedby="description-error description-counter"
           ></textarea>
           <div class="field-footer">
-            <span class="error">
+            <span id="description-error" class="error">
               @if (showError(form.controls.description)) {
                 @if (form.controls.description.hasError('maxlength')) {
                   Please keep it under {{ maxLength.description }} characters.
