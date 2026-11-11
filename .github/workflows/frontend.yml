@@ -15,11 +15,7 @@ env:
   IMAGE: ${{ vars.IMAGE_PREFIX }}/carebridge-frontend
   CONTAINER_APP: frontend
   RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
-  # Settings of this deployment live in GitHub (Settings > Secrets and variables > Actions > Variables), not in the code.
-  # Login to Azure works without a password via OpenID Connect.
-  AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-  AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-  AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+  # Settings of this deployment live in GitHub (Settings > Secrets and variables > Actions), not in the code.
 
 jobs:
   build-and-test:
@@ -82,10 +78,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        # Login works without a password via OpenID Connect. The IDs are secrets, so only this step gets them
+        # and GitHub hides them in the logs.
         with:
-          client-id: ${{ env.AZURE_CLIENT_ID }}
-          tenant-id: ${{ env.AZURE_TENANT_ID }}
-          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to Azure Container Apps
         run: |
           az extension add --name containerapp --upgrade --allow-preview true --only-show-errors
