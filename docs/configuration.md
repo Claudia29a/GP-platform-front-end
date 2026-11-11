@@ -27,7 +27,8 @@ Every setting has a priority: how bad it is when the value leaks or is lost. The
 | `ACCOUNT_JWKS_URI` | Intake Service | Public | Azure variable | Address of the public key |
 | `GOOGLE_CLIENT_ID` | Intake Service, front-end | Public | Azure variable | Public by design: every browser sees it |
 | `API_URL`, `ACCOUNT_API_URL` | Front-end | Public | Azure variable | Internal addresses of the services |
-| `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`, `AZURE_RESOURCE_GROUP`, `IMAGE_PREFIX` | Pipelines | Public | GitHub variable | Names, not passwords: Azure only accepts a deploy from this repository's `production` environment (OIDC) |
+| `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` | Pipelines | High | GitHub secret | Identify the deploy identity on Azure; not passwords, because Azure only accepts a deploy from this repository's `production` environment (OIDC), but kept secret so they are hidden in logs |
+| `AZURE_RESOURCE_GROUP`, `IMAGE_PREFIX` | Pipelines | Public | GitHub variable | Only names; as secrets, GitHub would hide them in every log line |
 
 **When a setting is missing**, the service or front-end refuses to start. Two exceptions: empty staff lists make everyone a patient, and an empty `ACCOUNT_TOKEN_PRIVATE_KEY` makes a temporary key, which signs everyone out at each restart (only meant for a laptop).
 
