@@ -20,6 +20,8 @@ Health data is special category data (Article 9), the strictest kind. A question
 | Severity score, queue position, status, time sent | Intake database, readable, because the database sorts on them | Ordering the queue | No limit yet |
 | Permission: hashed user, version, time | Intake database | Proving the patient allowed it | Until withdrawn |
 | Name, email | Account database, **encrypted** | Email sign-in | No limit yet |
+| Whether the email is confirmed; hash of the confirmation code | Account database | Proving the address is real | The code hash: until used or replaced, at most 15 minutes valid |
+| Hash of the IP address at sign-up | Account database | Stopping accounts being created in bulk | 1 hour |
 | Email for finding the account | Account database, **hashed** | Email sign-in | No limit yet |
 | Password | Account database, **BCrypt hash** | Email sign-in | No limit yet |
 | Failed sign-ins, lock time, created time | Account database, readable | Locking after wrong passwords | No limit yet |
@@ -37,7 +39,7 @@ Health data is special category data (Article 9), the strictest kind. A question
 | Who is responsible (Art. 4, 26, 28) | 📄 | Not recorded | The practice would be the controller, CareBridge the processor, with a written agreement. |
 | Telling people what happens to their data (Art. 12, 13) | ✅ | A privacy page, open to everyone, linked from sign-in, the footer and the popup | A real practice adds its name and contact details. |
 | Only the data that is needed (Art. 5(1)(c)) | 🟡 | The form asks structured questions; the score and queue position are hidden from patients | The patient's own ID and email are repeated in every question and answer; free-text boxes invite more than is needed. |
-| Correct data (Art. 5(1)(d)) | 🟡 | Input is checked on the front-end and back-end | Email addresses of password accounts are not verified. See [the email feature](#before-the-doctors-email-feature). |
+| Correct data (Art. 5(1)(d)) | ✅ | Input is checked on the front-end and back-end; email addresses are confirmed with an emailed code before a question can be sent | |
 | Storage limit (Art. 5(1)(e)) | ❌ **must** | Nothing is ever deleted | A retention period and an automatic clean-up. Dutch medical records are normally kept for 20 years, so the practice must decide what counts as part of the record. |
 
 ## Rights of the patient
@@ -73,6 +75,7 @@ Health data is special category data (Article 9), the strictest kind. A question
 | --- | --- | --- | --- | --- |
 | Microsoft Azure | Hosting, database, logs | Everything above, in Sweden Central | 🟡 | Check that the data processing terms apply: this runs on a student subscription. |
 | Google | Sign-in | Name, email; the sign-in page loads a Google script, which sends the visitor's IP address to Google even if they choose email | ❌ | Load the script only when someone chooses Google (the privacy page already says it happens); record the transfer outside the EU (Art. 44 to 46). |
+| Email provider (to be chosen) | Sends the confirmation code | Email address and the code; never questions | 🟡 | Choose an EU-hosted provider and accept its data processing terms; the privacy page already names the service. |
 | GitHub | Code and images | No patient data; test reports use made-up data | ✅ | |
 
 ## Accountability
@@ -88,7 +91,7 @@ Health data is special category data (Article 9), the strictest kind. A question
 The next feature touches this checklist directly, so it starts with these rules:
 
 1. **No health details in the email.** The email only says there is a reply and links to CareBridge, where the patient signs in. Email is not a safe place for health data.
-2. **Verify email addresses first.** Password accounts are unverified, so a mistyped address would send the message to a stranger.
+2. **Verify email addresses first.** Done (Story 7): a password account confirms its address with an emailed code.
 3. **The email provider is a new processor.** It needs data processing terms and, preferably, EU hosting, and has to be added to the privacy page and the table above.
 
 ## Work that follows from this
@@ -96,10 +99,9 @@ The next feature touches this checklist directly, so it starts with these rules:
 In order of importance. Each becomes a user story, with acceptance criteria and tests first.
 
 1. Close the direct route to the services and limit the database firewall.
-2. Email verification (needed for the doctor's email).
-3. Delete my account and questions.
-4. Download my data.
-5. Correct my details.
-6. Automatic clean-up after the retention period.
-7. Log of which staff member opened which question.
-8. Load the Google script only on request; add a Content Security Policy.
+2. Delete my account and questions.
+3. Download my data.
+4. Correct my details.
+5. Automatic clean-up after the retention period.
+6. Log of which staff member opened which question.
+7. Load the Google script only on request; add a Content Security Policy.

@@ -105,3 +105,24 @@ End-to-end tests are in `e2e/` in the front-end repository, named after their cr
 | TAC2 database shows no answers, names or email addresses | `e2e` Story 6 TAC2 · `integration` IntakeRepositoryTest, AccountServiceIntegrationTest |
 | TAC3 existing data is converted, nothing is lost | `integration` EncryptionMigrationIntegrationTest (both services) |
 | TAC4 changed data or a wrong key is refused | `unit` DataProtectionTest (both services) |
+
+## Story 7: email verification
+
+Test types were chosen with the story, before the code was written.
+
+| Criterion | Proof |
+| --- | --- |
+| AC1 after sign-up, the user is asked for the code | `e2e` Story 7 AC1 · `component` verify-email.spec |
+| AC2 the emailed code confirms the address | `e2e` Story 7 AC2 · `api` AccountControllerTest · `integration` AccountServiceIntegrationTest |
+| AC3 wrong code, new code and waiting get clear messages | `e2e` Story 7 AC3 · `component` verify-email.spec · `unit` VerificationServiceTest, account-api.service.spec |
+| AC4 no question before the address is confirmed | `e2e` Story 7 AC4 TAC4 · `unit` auth.guards.spec |
+| AC5 too many accounts from one device are refused | `e2e` Story 7 AC5 TAC5 · `component` sign-in.spec · `api` AccountControllerTest |
+| AC6 Google users get no code | `unit` CurrentUserResolverTest, auth.guards.spec. Not `e2e`: the tests cannot sign in with a real Google account. |
+| TAC1 random code, only a hash stored, expires after 15 minutes | `unit` VerificationServiceTest · `integration` AccountServiceIntegrationTest |
+| TAC2 verify answers; 5 wrong tries; a code works once | `e2e` Story 7 TAC2 · `unit` VerificationServiceTest |
+| TAC3 new code limits; nothing revealed for an unknown address | `e2e` Story 7 TAC3 · `unit` VerificationServiceTest |
+| TAC4 the token says whether the address is verified; the Intake Service refuses otherwise | `e2e` Story 7 AC4 TAC4 · `api` IntakeControllerTest · `unit` CurrentUserResolverTest |
+| TAC5 5 sign-ups an hour per IP, read from the platform's proxies | `e2e` Story 7 AC5 TAC5 · `unit` SignUpLimiterTest, ClientAddressTest |
+| TAC6 SMTP settings, no health data, sending failure does not block | `unit` CodeMailerTest |
+| TAC7 tests never send real email | `e2e` all, through Mailpit in `docker-compose.yml` |
+| TAC8 the privacy page names the email service | `component` privacy-page.spec |

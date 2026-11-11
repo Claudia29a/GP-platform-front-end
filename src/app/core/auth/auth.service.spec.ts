@@ -34,7 +34,7 @@ describe('[unit] AuthService', () => {
   let auth: AuthService;
   let http: HttpTestingController;
   let google: { disableAutoSelect: ReturnType<typeof vi.fn> };
-  const gp: CurrentUser = { id: 'google-gp', name: 'Dr. Jansen', email: 'gp@example.com', role: 'GP', privacyConsentNeeded: false };
+  const gp: CurrentUser = { id: 'google-gp', name: 'Dr. Jansen', email: 'gp@example.com', role: 'GP', emailVerified: true, privacyConsentNeeded: false };
 
   beforeEach(() => {
     sessionStorage.clear();

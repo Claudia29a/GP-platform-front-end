@@ -46,6 +46,12 @@ describe('[component] App (top bar)', () => {
     expect((await render({ ...PATIENT, privacyConsentNeeded: true })).querySelector('app-privacy-consent')).not.toBeNull();
   });
 
+  it('asks for permission only after the email address is confirmed', async () => {
+    const page = await render({ ...PATIENT, emailVerified: false, privacyConsentNeeded: true });
+
+    expect(page.querySelector('app-privacy-consent')).toBeNull();
+  });
+
   it('does not ask a patient who gave permission', async () => {
     expect((await render(PATIENT)).querySelector('app-privacy-consent')).toBeNull();
   });

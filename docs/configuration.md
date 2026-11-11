@@ -21,16 +21,20 @@ Every setting has a priority: how bad it is when the value leaks or is lost. The
 | `INTAKE_DB_PASSWORD` | Intake Service | High | Azure secret | Database access; the firewall also only allows Azure |
 | `ACCOUNT_DB_PASSWORD` | Account Service | High | Azure secret | Database access; the firewall also only allows Azure |
 | `SONAR_TOKEN` | Pipelines | High | GitHub secret | Can change the code quality results |
+| `MAIL_PASSWORD` | Account Service | High | Azure secret | Lets someone send email as CareBridge |
 | `GP_EMAILS`, `ASSISTANT_EMAILS` | Intake Service | Personal | Azure secret | Who gets a staff role; never in git |
 | `INTAKE_DB_URL`, `INTAKE_DB_USER` | Intake Service | Public | Azure variable | Useless without the password |
 | `ACCOUNT_DB_URL`, `ACCOUNT_DB_USER` | Account Service | Public | Azure variable | Useless without the password |
 | `ACCOUNT_JWKS_URI` | Intake Service | Public | Azure variable | Address of the public key |
+| `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_AUTH`, `MAIL_STARTTLS_REQUIRED`, `MAIL_FROM` | Account Service | Public | Azure variable | The email provider's server and the sender address; useless without the password |
 | `GOOGLE_CLIENT_ID` | Intake Service, front-end | Public | Azure variable | Public by design: every browser sees it |
 | `API_URL`, `ACCOUNT_API_URL` | Front-end | Public | Azure variable | Internal addresses of the services |
 | `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` | Pipelines | High | GitHub secret | Identify the deploy identity on Azure; not passwords, because Azure only accepts a deploy from this repository's `production` environment (OIDC), but kept secret so they are hidden in logs |
 | `AZURE_RESOURCE_GROUP`, `IMAGE_PREFIX` | Pipelines | Public | GitHub variable | Only names; as secrets, GitHub would hide them in every log line |
 
 **When a setting is missing**, the service or front-end refuses to start. Two exceptions: empty staff lists make everyone a patient, and an empty `ACCOUNT_TOKEN_PRIVATE_KEY` makes a temporary key, which signs everyone out at each restart (only meant for a laptop).
+
+**Email:** locally and in the pipeline, `docker-compose.yml` sends every email to Mailpit, which catches it (http://localhost:8025). In production `MAIL_*` point to the email provider, with `MAIL_AUTH` and `MAIL_STARTTLS_REQUIRED` set to `true`.
 
 **Local values** in `.env`, `application-local.properties` and the test settings are made-up values for a laptop or a test. They never open anything on Azure.
 

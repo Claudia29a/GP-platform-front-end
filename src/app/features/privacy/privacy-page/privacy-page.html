@@ -1,6 +1,6 @@
 <section class="card">
   <h1>Privacy at CareBridge</h1>
-  <p class="version">Version of 4 November 2026</p>
+  <p class="version">Version of 11 November 2026</p>
 
   <p class="notice">
     <strong>CareBridge is a student project.</strong> Please do not enter real medical information.
@@ -11,8 +11,10 @@
     <li>Your name and email address.</li>
     <li>Your answers: the area of your complaint, how long you have had it, how much it bothers you, your symptoms, medication, treatment and your description.</li>
     <li>When you sent your question, and when you gave permission.</li>
+    <li>If you use email to sign in: whether you confirmed your email address, and a hash of the confirmation code.</li>
     <li>If you use email to sign in: a hash of your password, never the password itself.</li>
-    <li>Technical logs with IP addresses, to find faults.</li>
+    <li>Technical logs with IP addresses, to find faults. When you create an account, a hash of your IP address is
+      kept for one hour, to stop accounts being created in bulk.</li>
   </ul>
 
   <h2>Why we need it</h2>
@@ -28,6 +30,10 @@
     <li>You see your own questions.</li>
     <li>The GP and the GP assistants of the practice see all questions.</li>
     <li>Microsoft Azure hosts CareBridge in Sweden.</li>
+    <li>
+      An email service sends the code that confirms your email address. It receives only your email address and the
+      code, never your questions.
+    </li>
     <li>
       Google handles the sign-in if you choose it. The sign-in page loads a script from Google, so Google can see your
       IP address, even if you use your email address.

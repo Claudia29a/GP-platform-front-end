@@ -21,6 +21,8 @@ test.describe('[e2e] Story 5: sign-in with email and password', () => {
     await page.locator('#create-confirm').fill(PASSWORD);
     await page.locator('form button[type=submit]').click();
 
+    // Story 7: a new account first confirms its email address.
+    await expect(page.getByRole('heading', { name: 'Check your email' })).toBeVisible();
     await expect(page.locator('.role')).toHaveText('Patient');
   });
 
@@ -116,12 +118,13 @@ test.describe('[e2e] Story 5: sign-in with email and password', () => {
     const body = await (await request.get('/api/me', { headers: { Authorization: `Bearer ${await tokenFor(request, email)}` } })).json();
     expect(body.role).toBe('PATIENT');
 
-    // The real staff address, still unverified: the account is created, the role is not given.
+    // The real staff address, without access to its inbox: the account is created, but it can never be
+    // confirmed, so it never gets the staff role and cannot even reach the queue.
     const fake = await request.post('/api/account/accounts', { data: { name: 'Fake GP', email: GP_EMAIL, password: PASSWORD } });
     expect([201, 409]).toContain(fake.status());
     await signIn(page, GP_EMAIL);
     await expect(page.locator('.role')).toHaveText('Patient');
     await page.goto('/queue');
-    await expect(page).toHaveURL(/ask/);
+    await expect(page).toHaveURL(/verify-email/);
   });
 });

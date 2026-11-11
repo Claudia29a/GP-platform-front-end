@@ -40,6 +40,12 @@ describe('[component] PrivacyPage', () => {
     }
   });
 
+  it('names the email service that sends the confirmation code', async () => {
+    await render(null);
+
+    expect(page.textContent).toContain('An email service sends the code that confirms your email address');
+  });
+
   it('offers withdrawing only to a patient who allowed it', async () => {
     await render(PATIENT);
     expect(withdrawButton()?.textContent).toContain('Withdraw my permission');
