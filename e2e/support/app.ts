@@ -9,6 +9,8 @@ export const ASSISTANT_EMAIL = 'e2e-assistant@example.com';
 export const PASSWORD = 'Secret12';
 
 const BACKEND_DIR = process.env['E2E_BACKEND_DIR'] ?? '../GP-platform-back-end';
+/** Mailpit, the test mail server from docker-compose.yml: every email the platform sends lands here. */
+const MAILPIT_URL = process.env['E2E_MAILPIT_URL'] ?? 'http://localhost:8025';
 
 function sql(service: 'account-db' | 'intake-db', database: string, statement: string): void {
   execFileSync('docker', ['compose', 'exec', '-T', service, 'psql', '-U', database, '-d', database, '-qc', statement], {
@@ -64,12 +66,28 @@ export function cleanTestData(): void {
   if (questions.length) {
     sql('intake-db', 'intake', `delete from intake where id in (${quoted(questions)})`);
   }
+  // Earlier runs' sign-ups would count against the sign-up limit.
+  sql('account-db', 'account', 'delete from sign_up');
 }
 
-/** Email verification does not exist yet, so a test marks a staff address as verified in the database. */
-export function markEmailVerified(email: string): void {
-  const accounts = accountIdsWith((stored) => stored === email);
-  sql('account-db', 'account', `update account set email_verified = true where id in (${quoted(accounts)})`);
+/** Reads the newest code emailed to this address, like a user opening their inbox. Waits for it to arrive. */
+export async function codeFor(request: APIRequestContext, email: string, after = 0): Promise<string> {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const search = await request.get(`${MAILPIT_URL}/api/v1/search`, { params: { query: `to:"${email}"` } });
+    const newest = (await search.json()).messages?.[0];
+    if (newest && Date.parse(newest.Created) > after) {
+      const message = await (await request.get(`${MAILPIT_URL}/api/v1/message/${newest.ID}`)).json();
+      return /\b(\d{6})\b/.exec(message.Text)![1];
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error(`No code arrived for ${email}`);
+}
+
+/** Confirms the address with the emailed code, as the code screen does. */
+export async function verifyEmail(request: APIRequestContext, email: string): Promise<void> {
+  const response = await request.post('/api/account/accounts/verify', { data: { email, code: await codeFor(request, email) } });
+  expect(response.status()).toBe(200);
 }
 
 let counter = 0;
@@ -77,14 +95,21 @@ export function uniqueEmail(): string {
   return `e2e-patient-${Date.now()}-${++counter}@example.com`;
 }
 
-/** Most stories are not about privacy, so a new patient has already allowed the use of their data, unless a test says not. */
+/**
+ * Most stories are not about verification or privacy, so a new patient has confirmed their address with the
+ * emailed code and allowed the use of their data, unless a test says not.
+ */
 export async function createAccount(
   request: APIRequestContext,
   email: string,
-  options: { allowPrivacy?: boolean } = {},
+  options: { verify?: boolean; allowPrivacy?: boolean } = {},
 ): Promise<void> {
   const response = await request.post('/api/account/accounts', { data: { name: 'E2E Patient', email, password: PASSWORD } });
   expect(response.status()).toBe(201);
+  if (options.verify === false) {
+    return;
+  }
+  await verifyEmail(request, email);
   if (options.allowPrivacy !== false) {
     const allowed = await request.post('/api/privacy-consent', {
       headers: { Authorization: `Bearer ${await tokenFor(request, email)}` },
@@ -110,7 +135,9 @@ export async function signIn(page: Page, email: string, password = PASSWORD): Pr
 export async function signInAsStaff(page: Page, request: APIRequestContext, email: string): Promise<void> {
   const response = await request.post('/api/account/accounts', { data: { name: 'E2E Staff', email, password: PASSWORD } });
   expect([201, 409]).toContain(response.status());
-  markEmailVerified(email);
+  if (response.status() === 201) {
+    await verifyEmail(request, email);
+  }
   await signIn(page, email);
   await expect(page.getByRole('link', { name: 'Queue' })).toBeVisible();
 }

@@ -1,0 +1,39 @@
+<section class="card verify">
+  <h1>Check your email</h1>
+  <p class="lead">
+    We sent a 6-digit code to <strong>{{ email() }}</strong>. Type it below to confirm the address is yours. The code
+    works for 15 minutes.
+  </p>
+
+  <form [formGroup]="form" (ngSubmit)="verify()" novalidate>
+    <div class="field">
+      <label for="verify-code">Code from the email</label>
+      <input id="verify-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="11"
+             formControlName="code" [attr.aria-invalid]="codeError() ? true : null"
+             [attr.aria-describedby]="codeError() ? 'verify-code-error' : null" />
+      @if (codeError(); as message) {
+        <p id="verify-code-error" class="error">{{ message }}</p>
+      }
+    </div>
+    <button type="submit" class="button" [disabled]="busy()">{{ busy() ? 'Checking…' : 'Confirm email address' }}</button>
+  </form>
+
+  @if (errorMessage(); as message) {
+    <p class="alert" role="alert">{{ message }}</p>
+  }
+  @if (infoMessage(); as message) {
+    <p class="info" role="status">{{ message }}</p>
+  }
+
+  <div class="help">
+    <p>No email? Check your spam folder, or</p>
+    <button id="resend-code" type="button" class="button secondary" [disabled]="busy()" (click)="sendNewCode()">
+      Send a new code
+    </button>
+    <p>
+      Wrong address?
+      <button id="verify-sign-out" type="button" class="link" (click)="signOut()">Sign out</button> and create the
+      account again.
+    </p>
+  </div>
+</section>

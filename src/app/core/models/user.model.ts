@@ -6,6 +6,8 @@ export interface CurrentUser {
   name: string;
   email: string;
   role: Role;
+  /** False for a password account until the emailed code was typed in; Google always verifies. */
+  emailVerified: boolean;
   /** True until a patient has allowed the use of their data. */
   privacyConsentNeeded: boolean;
 }

@@ -257,6 +257,21 @@ describe('[component] SignIn', () => {
       expect(accounts.login).not.toHaveBeenCalled();
     });
 
+    it('explains when too many accounts were created from this device', async () => {
+      await render();
+      accounts.register.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 429, url: '/api/account/accounts' })));
+      await openCreateAccount();
+
+      await type('create-name', 'Bram');
+      await type('create-email', 'bram@example.com');
+      await type('create-password', 'Secret12');
+      await type('create-confirm', 'Secret12');
+      await submit();
+
+      expect(page.querySelector('.alert')?.textContent).toContain('Too many accounts were created from this device');
+      expect(accounts.login).not.toHaveBeenCalled();
+    });
+
     it('clears an old error when switching tabs', async () => {
       await render();
       accounts.login.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 401 })));

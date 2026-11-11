@@ -35,7 +35,7 @@ describe('[component] IntakeForm', () => {
     submittedAt: '2026-10-14T09:00:00Z',
   };
 
-  const patient: CurrentUser = { id: 'google-anna', name: 'Anna de Vries', email: 'anna@example.com', role: 'PATIENT', privacyConsentNeeded: false };
+  const patient: CurrentUser = { id: 'google-anna', name: 'Anna de Vries', email: 'anna@example.com', role: 'PATIENT', emailVerified: true, privacyConsentNeeded: false };
 
   const setPrivacyConsentNeeded = vi.fn();
 

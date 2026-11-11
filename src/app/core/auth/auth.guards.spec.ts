@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot, UrlTree, provideRouter } from '@angular/router';
 
 import { CurrentUser, Role } from '../models/user.model';
-import { homeGuard, roleGuard, signedInGuard } from './auth.guards';
+import { homeGuard, roleGuard, signedInGuard, verifyEmailGuard } from './auth.guards';
 import { AuthService } from './auth.service';
 
 describe('[unit] auth guards', () => {
@@ -16,8 +16,8 @@ describe('[unit] auth guards', () => {
     });
   });
 
-  function signInAs(role: Role): void {
-    user.set({ id: 'id', name: 'Name', email: 'name@example.com', role, privacyConsentNeeded: false });
+  function signInAs(role: Role, emailVerified = true): void {
+    user.set({ id: 'id', name: 'Name', email: 'name@example.com', role, emailVerified, privacyConsentNeeded: false });
   }
 
   function run(guard: CanActivateFn): boolean | string {
@@ -41,6 +41,22 @@ describe('[unit] auth guards', () => {
 
     signInAs('GP');
     expect(run(homeGuard)).toBe('/queue');
+  });
+
+  it('sends a user with an unconfirmed email address to the code screen first', () => {
+    signInAs('PATIENT', false);
+
+    expect(run(homeGuard)).toBe('/verify-email');
+    expect(run(roleGuard('PATIENT'))).toBe('/verify-email');
+    expect(run(signedInGuard)).toBe('/verify-email');
+    expect(run(verifyEmailGuard)).toBe(true);
+  });
+
+  it('only shows the code screen to a signed-in user who still needs it', () => {
+    expect(run(verifyEmailGuard)).toBe('/sign-in');
+
+    signInAs('PATIENT');
+    expect(run(verifyEmailGuard)).toBe('/');
   });
 
   it('keeps patients away from the queue', () => {

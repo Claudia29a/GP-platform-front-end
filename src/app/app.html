@@ -32,6 +32,6 @@
   <a routerLink="/privacy">Privacy</a>
 </footer>
 
-@if (auth.user()?.privacyConsentNeeded) {
+@if (auth.user()?.emailVerified && auth.user()?.privacyConsentNeeded) {
   <app-privacy-consent />
 }

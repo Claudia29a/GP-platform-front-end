@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 
-import { homeGuard, roleGuard, signedInGuard, signedOutGuard } from './core/auth/auth.guards';
+import { homeGuard, roleGuard, signedInGuard, signedOutGuard, verifyEmailGuard } from './core/auth/auth.guards';
 
 export const routes: Routes = [
   // Sends each user to their own start page, or to sign-in.
@@ -10,6 +10,12 @@ export const routes: Routes = [
     title: 'Sign in · CareBridge',
     canActivate: [signedOutGuard],
     loadComponent: () => import('./features/sign-in/sign-in').then((m) => m.SignIn),
+  },
+  {
+    path: 'verify-email',
+    title: 'Confirm your email · CareBridge',
+    canActivate: [verifyEmailGuard],
+    loadComponent: () => import('./features/verify-email/verify-email').then((m) => m.VerifyEmail),
   },
   {
     path: 'ask',
