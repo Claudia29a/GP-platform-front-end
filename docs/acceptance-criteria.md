@@ -126,3 +126,21 @@ Test types were chosen with the story, before the code was written.
 | TAC6 SMTP settings, no health data, sending failure does not block | `unit` CodeMailerTest |
 | TAC7 tests never send real email | `e2e` all, through Mailpit in `docker-compose.yml` |
 | TAC8 the privacy page names the email service | `component` privacy-page.spec |
+
+## Story 8: my data and the access log
+
+Test types were chosen with the story, before the code was written.
+
+| Criterion | Proof |
+| --- | --- |
+| AC1 My data shows details, permission and questions | `e2e` Story 8 AC1 · `component` my-data.spec · `unit` MyDataServiceTest, my-data.service.spec |
+| AC2 download everything as one file | `e2e` Story 8 AC2 · `component` my-data.spec |
+| AC3 delete after confirming; signed out with a message | `e2e` Story 8 AC3 · `component` my-data.spec, sign-in.spec · `unit` my-data.service.spec |
+| AC4 opening a question is recorded | `e2e` Story 8 AC4 AC5 AC6 · `unit` AccessLogServiceTest, IntakeServiceTest |
+| AC5 the GP sees who opened a question | `e2e` Story 8 AC4 AC5 AC6 · `component` intake-detail.spec |
+| AC6 the download includes who opened the questions | `e2e` Story 8 AC4 AC5 AC6 · `unit` MyDataServiceTest |
+| TAC1 own data only, from the token | `e2e` Story 8 TAC1 TAC4 · `api` MyDataControllerTest, AccountControllerTest · `unit` OwnTokensTest |
+| TAC2 delete questions, permission and account; the queue closes up under the lock | `unit` MyDataServiceTest, QueueServiceTest, AccountServiceTest · `api` MyDataControllerTest · `integration` IntakeRepositoryTest, AccountServiceIntegrationTest |
+| TAC3 staff name encrypted, ID hashed, log kept after deletion | `unit` AccessLogServiceTest · `integration` IntakeRepositoryTest |
+| TAC4 only the GP reads the access log | `e2e` Story 8 TAC1 TAC4 · `api` MyDataControllerTest |
+| TAC5 privacy page and checklist describe these rights | `component` privacy-page.spec |

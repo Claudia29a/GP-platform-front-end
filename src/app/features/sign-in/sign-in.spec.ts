@@ -17,16 +17,18 @@ describe('[component] SignIn', () => {
     signIn: ReturnType<typeof vi.fn>;
     sessionExpired: ReturnType<typeof signal<boolean>>;
     privacyConsentDeclined: ReturnType<typeof signal<boolean>>;
+    accountDeleted: ReturnType<typeof signal<boolean>>;
   };
   let google: { renderButton: ReturnType<typeof vi.fn> };
   let accounts: { register: ReturnType<typeof vi.fn>; login: ReturnType<typeof vi.fn> };
   let onGoogleSignIn: (token: string) => void;
 
-  async function render(options: { expired?: boolean; declined?: boolean; googleFails?: boolean } = {}) {
+  async function render(options: { expired?: boolean; declined?: boolean; deleted?: boolean; googleFails?: boolean } = {}) {
     auth = {
       signIn: vi.fn().mockResolvedValue(PATIENT),
       sessionExpired: signal(options.expired ?? false),
       privacyConsentDeclined: signal(options.declined ?? false),
+      accountDeleted: signal(options.deleted ?? false),
     };
     google = {
       renderButton: vi.fn((_parent: HTMLElement, callback: (token: string) => void) => {
@@ -77,6 +79,12 @@ describe('[component] SignIn', () => {
     await render({ declined: true });
 
     expect(page.querySelector('.info')?.textContent).toContain('You have been signed out');
+  });
+
+  it('confirms that a deleted account is gone', async () => {
+    await render({ deleted: true });
+
+    expect(page.querySelector('.info')?.textContent).toContain('Your account and questions have been deleted.');
   });
 
   it('links to the privacy page', async () => {

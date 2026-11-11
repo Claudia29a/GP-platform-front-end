@@ -1,0 +1,83 @@
+<section class="card my-data">
+  <h1>My data</h1>
+  <p class="lead">Everything CareBridge stores about you. You can download it or delete it.</p>
+
+  @if (errorMessage(); as message) {
+    <p class="alert" role="alert">{{ message }}</p>
+  }
+
+  @if (loading()) {
+    <p>Loading…</p>
+  } @else if (data(); as data) {
+    <h2>Your details</h2>
+    <dl>
+      <dt>Name</dt>
+      <dd>{{ data.user.name }}</dd>
+      <dt>Email address</dt>
+      <dd>
+        {{ data.user.email }}
+        @if (data.account; as account) {
+          <span class="badge">{{ account.emailVerified ? 'Confirmed' : 'Not confirmed' }}</span>
+        }
+      </dd>
+      <dt>Signs in with</dt>
+      <dd>{{ data.account ? 'Email and password' : 'Google' }}</dd>
+      @if (data.account; as account) {
+        <dt>Account created</dt>
+        <dd>{{ account.createdAt | date: 'd MMMM y' }}</dd>
+      }
+      <dt>Permission to use your data</dt>
+      <dd>
+        @if (data.privacyConsent; as consent) {
+          Given on {{ consent.acceptedAt | date: 'd MMMM y, HH:mm' }}
+        } @else {
+          Not given
+        }
+      </dd>
+    </dl>
+
+    <h2>Your questions ({{ data.questions.length }})</h2>
+    @for (item of data.questions; track item.question.id) {
+      <article class="question">
+        <p class="question-title">
+          <strong>{{ areaLabel(item.question) }}</strong>, sent {{ item.question.submittedAt | date: 'd MMMM y' }}
+          <span class="badge">{{ statusLabels[item.question.status] }}</span>
+        </p>
+        <p class="description">{{ item.question.description }}</p>
+        <ul class="opened-by">
+          @for (entry of item.openedBy; track $index) {
+            <li>
+              Opened by {{ entry.staffName }} ({{ roleLabels[entry.role] }}) on {{ entry.viewedAt | date: 'd MMMM y, HH:mm' }}
+            </li>
+          } @empty {
+            <li>Nobody at the practice has opened this question yet.</li>
+          }
+        </ul>
+      </article>
+    } @empty {
+      <p class="none">You have not asked a question.</p>
+    }
+
+    <h2>Download</h2>
+    <p>One file with everything above, which you can keep or give to another practice.</p>
+    <button type="button" class="button secondary" (click)="download()">Download my data</button>
+
+    <h2>Delete my account</h2>
+    <p>
+      This deletes your account and all your questions straight away. It cannot be undone. Backups are removed after
+      7 days. The record of which staff member opened your questions stays, without your answers.
+    </p>
+    <div class="field">
+      <label class="check">
+        <input id="confirm-delete" type="checkbox" [formControl]="confirmed" (change)="confirmMissing.set(false)" />
+        I understand this cannot be undone
+      </label>
+      @if (confirmMissing()) {
+        <p class="error">Please confirm that you understand this cannot be undone.</p>
+      }
+    </div>
+    <button type="button" class="button danger" [disabled]="deleting()" (click)="deleteEverything()">
+      {{ deleting() ? 'Deleting…' : 'Delete my account' }}
+    </button>
+  }
+</section>

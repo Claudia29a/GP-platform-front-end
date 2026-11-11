@@ -36,6 +36,7 @@ export class SignIn {
 
   protected readonly sessionExpired = this.auth.sessionExpired;
   protected readonly privacyConsentDeclined = this.auth.privacyConsentDeclined;
+  protected readonly accountDeleted = this.auth.accountDeleted;
   protected readonly mode = signal<Mode>('sign-in');
   protected readonly busy = signal(false);
   protected readonly errorMessage = signal<string | null>(null);

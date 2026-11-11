@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
-import { GP, PATIENT, testIntake } from '../../../../testing/test-data';
+import { ASSISTANT, GP, PATIENT, testIntake } from '../../../../testing/test-data';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Intake } from '../../../core/models/intake.model';
 import { CurrentUser, isStaff } from '../../../core/models/user.model';
@@ -13,16 +13,18 @@ import { IntakeDetail } from './intake-detail';
 
 describe('[component] IntakeDetail', () => {
   let getById: ReturnType<typeof vi.fn>;
+  let getAccessLog: ReturnType<typeof vi.fn>;
 
   async function render(user: CurrentUser, result: Intake | HttpErrorResponse) {
     getById = vi.fn().mockReturnValue(result instanceof HttpErrorResponse ? throwError(() => result) : of(result));
+    getAccessLog = vi.fn().mockReturnValue(of([{ staffName: 'Sam Bakker', role: 'GP_ASSISTANT', viewedAt: '2026-11-11T10:00:00Z' }]));
     const current = signal(user);
     await TestBed.configureTestingModule({
       imports: [IntakeDetail],
       providers: [
         provideRouter([]),
-        { provide: IntakeService, useValue: { getById } },
-        { provide: AuthService, useValue: { isStaff: computed(() => isStaff(current())) } },
+        { provide: IntakeService, useValue: { getById, getAccessLog } },
+        { provide: AuthService, useValue: { user: current, isStaff: computed(() => isStaff(current())) } },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(IntakeDetail);
@@ -69,5 +71,20 @@ describe('[component] IntakeDetail', () => {
     const page = await render(PATIENT, new HttpErrorResponse({ status: 404 }));
 
     expect(page.querySelector('.alert')?.textContent).toContain('could not be found');
+  });
+
+  it('shows the GP who opened the question and when', async () => {
+    const page = await render(GP, testIntake());
+
+    expect(getAccessLog).toHaveBeenCalledWith('question-1');
+    expect(page.querySelector('.access-log')?.textContent).toContain('Sam Bakker');
+    expect(page.querySelector('.access-log')?.textContent).toContain('GP assistant');
+  });
+
+  it('shows the access log to nobody but the GP', async () => {
+    const assistantPage = await render(ASSISTANT, testIntake());
+
+    expect(getAccessLog).not.toHaveBeenCalled();
+    expect(assistantPage.querySelector('.access-log')).toBeNull();
   });
 });

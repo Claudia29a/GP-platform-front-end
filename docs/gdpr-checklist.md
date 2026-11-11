@@ -2,7 +2,7 @@
 
 What CareBridge does today for each GDPR requirement, checked against the code and the Azure settings on 4 November 2026.
 
-**Conclusion:** CareBridge is a student project and is **not ready for real patients**. Patients now get a privacy page, are asked for permission, and their data is encrypted in the database. They cannot yet correct, delete or download their data in the app, and nothing is deleted automatically. Until the gaps marked **must** are closed, the live site only holds made-up data.
+**Conclusion:** CareBridge is a student project and is **not ready for real patients**. Patients get a privacy page, are asked for permission, confirm their email address, and can see, download and delete their data; their data is encrypted in the database, and every time staff open a question it is recorded. Correcting details still goes through the practice, and nothing is deleted automatically yet. Until the gaps marked **must** are closed, the live site only holds made-up data.
 
 This is a student's analysis, not legal advice. A real launch needs a privacy officer and the GP practice to confirm it.
 
@@ -22,6 +22,7 @@ Health data is special category data (Article 9), the strictest kind. A question
 | Name, email | Account database, **encrypted** | Email sign-in | No limit yet |
 | Whether the email is confirmed; hash of the confirmation code | Account database | Proving the address is real | The code hash: until used or replaced, at most 15 minutes valid |
 | Hash of the IP address at sign-up | Account database | Stopping accounts being created in bulk | 1 hour |
+| Access log: question ID, staff name (**encrypted**), staff ID (**hashed**), role, time | Intake database | Record of who opened which question | No limit yet; kept after the question is deleted, without patient data |
 | Email for finding the account | Account database, **hashed** | Email sign-in | No limit yet |
 | Password | Account database, **BCrypt hash** | Email sign-in | No limit yet |
 | Failed sign-ins, lock time, created time | Account database, readable | Locking after wrong passwords | No limit yet |
@@ -46,10 +47,10 @@ Health data is special category data (Article 9), the strictest kind. A question
 
 | Right | Status | Today | Still needed |
 | --- | --- | --- | --- |
-| See their data (Art. 15) | 🟡 | Patients see their own questions in the app | Account details and a full overview. |
+| See their data (Art. 15) | ✅ | My data shows everything stored, including who opened each question | |
 | Correct their data (Art. 16) | ❌ **must** | No way to edit a question, name or email | A way to correct details, or to ask the practice to. |
-| Delete their data (Art. 17) | ❌ **must** | No delete feature in either service | Delete account and questions; handle the legal retention exception; backups clear after 7 days. |
-| Take their data with them (Art. 20) | ❌ | No export | Download as a file (JSON). |
+| Delete their data (Art. 17) | ✅ | Delete my account removes the account, questions and permission at once; backups clear after 7 days | A real practice must check the legal retention period for medical records first. |
+| Take their data with them (Art. 20) | ✅ | Download my data gives one JSON file | |
 | Limit or object (Art. 18, 21) | 📄 | No process | A contact address and a process at the practice. |
 | Automated decisions (Art. 22) | ✅ | The severity score only orders the queue. Staff can overrule it and a person answers every question. The privacy page explains this. | |
 
@@ -65,7 +66,7 @@ Health data is special category data (Article 9), the strictest kind. A question
 | Known vulnerabilities (Art. 32) | ✅ | Trivy gate blocks deploys, weekly scan, Dependabot, SonarQube for own code | |
 | Logs without health data (Art. 5, 32) | ✅ | The code writes no patient data to logs | Keep this rule when adding logging. |
 | Network (Art. 32) | ❌ **must** | The services can be reached from the internet directly (measured on 4 November 2026), though data still needs a token. The database firewall accepts any Azure customer's server, though it still needs a password. | Close the service route; limit the database to CareBridge. |
-| Who looked at a record (Art. 32) | ❌ **must** | No record of which staff member opened what | An access log; Dutch healthcare expects this (NEN 7510, NEN 7513). |
+| Who looked at a record (Art. 32) | ✅ | Every time staff open a question it is recorded; the GP sees it per question, the patient under My data | The queue overview is not logged per question; NEN 7513 asks more detail for a real practice. |
 | Browser protection (Art. 32) | 🟡 | `nosniff`, frame blocking and referrer policy are set | Add a Content Security Policy. |
 | Test data (Art. 25) | ✅ | Automated tests use made-up data | Keep the live site on made-up data as well. |
 
@@ -99,9 +100,6 @@ The next feature touches this checklist directly, so it starts with these rules:
 In order of importance. Each becomes a user story, with acceptance criteria and tests first.
 
 1. Close the direct route to the services and limit the database firewall.
-2. Delete my account and questions.
-3. Download my data.
-4. Correct my details.
-5. Automatic clean-up after the retention period.
-6. Log of which staff member opened which question.
-7. Load the Google script only on request; add a Content Security Policy.
+2. Correct my details.
+3. Automatic clean-up after the retention period.
+4. Load the Google script only on request; add a Content Security Policy.
