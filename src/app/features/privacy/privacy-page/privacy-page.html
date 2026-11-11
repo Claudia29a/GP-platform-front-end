@@ -47,6 +47,10 @@
     <li>Your account ID and the email address used for signing in are stored as a hash.</li>
     <li>Passwords are stored as a BCrypt hash, and an account locks after too many wrong passwords.</li>
     <li>Every connection is encrypted, and every question needs a signed-in user with the right role.</li>
+    <li>
+      We record which staff member opened your question and when. The GP can check this, and you see it under My
+      data.
+    </li>
   </ul>
 
   <h2>How long we keep it</h2>
@@ -56,9 +60,9 @@
 
   <h2>Your rights</h2>
   <p>
-    You can see your questions under My questions. You also have the right to a copy of your data, and to have it
-    corrected or deleted. These are not in the app yet, so please ask your practice. You can withdraw your permission
-    at any time; what you already sent stays stored until it is deleted.
+    Under My data you can see everything CareBridge stores about you, download it as a file, and delete your account
+    and questions. To have your data corrected, please ask your practice. You can withdraw your permission at any time;
+    what you already sent stays stored until you delete it.
   </p>
 
   @if (canWithdraw()) {

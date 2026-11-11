@@ -29,6 +29,8 @@ export class AuthService {
   readonly sessionExpired = signal(false);
   /** Set when a patient chose not to allow the use of their data, so the sign-in page can say why they are back. */
   readonly privacyConsentDeclined = signal(false);
+  /** Set after the user deleted their account, so the sign-in page can confirm it. */
+  readonly accountDeleted = signal(false);
 
   token(): string | null {
     return this.idToken();
@@ -55,6 +57,7 @@ export class AuthService {
     saveToken(token);
     this.sessionExpired.set(false);
     this.privacyConsentDeclined.set(false);
+    this.accountDeleted.set(false);
     try {
       return await this.loadUser();
     } catch (error) {
@@ -68,11 +71,27 @@ export class AuthService {
     this.currentUser.update((user) => user && { ...user, privacyConsentNeeded: needed });
   }
 
-  signOut(reason?: 'expired' | 'consent-declined'): void {
+  /** A password account's token comes from the CareBridge Account Service; a Google token from Google. */
+  isPasswordAccount(): boolean {
+    const token = this.idToken();
+    if (!token) {
+      return false;
+    }
+    try {
+      const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      const { iss } = JSON.parse(atob(payload)) as { iss?: string };
+      return !String(iss).includes('accounts.google.com');
+    } catch {
+      return false;
+    }
+  }
+
+  signOut(reason?: 'expired' | 'consent-declined' | 'account-deleted'): void {
     this.clear();
     this.google.disableAutoSelect();
     this.sessionExpired.set(reason === 'expired');
     this.privacyConsentDeclined.set(reason === 'consent-declined');
+    this.accountDeleted.set(reason === 'account-deleted');
     void this.router.navigate(['/sign-in']);
   }
 

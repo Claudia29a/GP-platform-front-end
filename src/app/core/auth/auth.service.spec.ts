@@ -107,4 +107,26 @@ describe('[unit] AuthService', () => {
     expect(auth.privacyConsentDeclined()).toBe(true);
     expect(auth.sessionExpired()).toBe(false);
   });
+
+  it('tells a password account from a Google account by who issued the token', async () => {
+    const token = (iss: string) => `header.${btoa(JSON.stringify({ iss, exp: Date.now() / 1000 + 600 })).replace(/=+$/, '')}.signature`;
+
+    const signingIn = auth.signIn(token('carebridge-account-service'));
+    http.expectOne(`${environment.apiUrl}/me`).flush(gp);
+    await signingIn;
+    expect(auth.isPasswordAccount()).toBe(true);
+
+    const google = auth.signIn(token('https://accounts.google.com'));
+    http.expectOne(`${environment.apiUrl}/me`).flush(gp);
+    await google;
+    expect(auth.isPasswordAccount()).toBe(false);
+  });
+
+  it('remembers that the account was deleted, for the sign-in page', () => {
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    auth.signOut('account-deleted');
+
+    expect(auth.accountDeleted()).toBe(true);
+  });
 });

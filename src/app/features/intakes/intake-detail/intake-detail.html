@@ -69,5 +69,13 @@
 
     <h2>The question</h2>
     <p class="description">{{ intake.description }}</p>
+    @if (accessLog(); as log) {
+      <h2>Opened by</h2>
+      <ul class="access-log">
+        @for (entry of log; track $index) {
+          <li>{{ entry.staffName }} ({{ roleLabels[entry.role] }}), {{ entry.viewedAt | date: 'd MMMM y, HH:mm' }}</li>
+        }
+      </ul>
+    }
   }
 </section>

@@ -40,6 +40,13 @@ describe('[component] PrivacyPage', () => {
     }
   });
 
+  it('tells patients where to see, download and delete their data, and that access is recorded', async () => {
+    await render(null);
+
+    expect(page.textContent).toContain('My data');
+    expect(page.textContent).toContain('which staff member opened your question');
+  });
+
   it('names the email service that sends the confirmation code', async () => {
     await render(null);
 

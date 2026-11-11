@@ -42,6 +42,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/intakes/intake-detail/intake-detail').then((m) => m.IntakeDetail),
   },
   {
+    path: 'my-data',
+    title: 'My data · CareBridge',
+    canActivate: [roleGuard('PATIENT')],
+    loadComponent: () => import('./features/my-data/my-data').then((m) => m.MyDataPage),
+  },
+  {
     path: 'privacy',
     title: 'Privacy · CareBridge',
     loadComponent: () => import('./features/privacy/privacy-page/privacy-page').then((m) => m.PrivacyPage),

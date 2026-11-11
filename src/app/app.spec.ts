@@ -37,7 +37,7 @@ describe('[component] App (top bar)', () => {
   it('shows patients their own menu, name and role', async () => {
     const page = await render(PATIENT);
 
-    expect(menu(page)).toEqual(['Ask a question', 'My questions']);
+    expect(menu(page)).toEqual(['Ask a question', 'My questions', 'My data']);
     expect(page.querySelector('.name')?.textContent).toContain('Anna de Vries');
     expect(page.querySelector('.role')?.textContent).toContain('Patient');
   });

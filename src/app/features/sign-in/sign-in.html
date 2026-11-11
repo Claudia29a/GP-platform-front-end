@@ -7,6 +7,9 @@
   @if (sessionExpired()) {
     <p class="info" role="status">Your session has ended. Please sign in again.</p>
   }
+  @if (accountDeleted()) {
+    <p class="info" role="status">Your account and questions have been deleted.</p>
+  }
   @if (privacyConsentDeclined()) {
     <p class="info" role="status">
       You have been signed out, because CareBridge cannot help you without your permission to use your data. Nothing was
