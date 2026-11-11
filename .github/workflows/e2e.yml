@@ -11,7 +11,9 @@ permissions:
 
 jobs:
   e2e:
-    runs-on: ubuntu-latest
+    # Pinned: the test browser installs system packages, and on the new Ubuntu 26 runners that failed. A fixed
+    # version cannot change under the pipeline without warning.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
       BRANCH: ${{ github.head_ref || github.ref_name }}
