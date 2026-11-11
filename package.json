@@ -9,7 +9,7 @@
     "test": "ng test",
     "test:coverage": "ng test --watch=false --coverage",
     "test:e2e": "playwright test",
-    "e2e:install": "playwright install --with-deps chromium",
+    "e2e:install": "playwright install chromium",
     "e2e:summary": "node e2e/support/acceptance-summary.mjs"
   },
   "private": true,
