@@ -31,6 +31,16 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
+    # The GP's replies: /api/messaging/questions/1/replies -> ${MESSAGING_API_URL}/questions/1/replies.
+    location /api/messaging/ {
+        proxy_pass ${MESSAGING_API_URL}/;
+        # The services accept only requests with this secret, so they cannot be used around the website.
+        proxy_set_header X-CareBridge-Gateway "${GATEWAY_SECRET}";
+        proxy_ssl_server_name on;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     # Same job as proxy.conf.json during development: /api/intakes -> ${API_URL}/intakes.
     location /api/ {
         proxy_pass ${API_URL}/;

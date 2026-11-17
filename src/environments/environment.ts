@@ -4,4 +4,6 @@ export const environment = {
   apiUrl: '/api',
   // Sign-up and sign-in with email and password (Account Service, ADR-010); forwarded the same way.
   accountApiUrl: '/api/account',
+  // The GP's replies (Messaging Service); forwarded the same way.
+  messagingApiUrl: '/api/messaging',
 };
