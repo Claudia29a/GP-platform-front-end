@@ -90,6 +90,19 @@ export async function codeFor(request: APIRequestContext, email: string, after =
   throw new Error(`No code arrived for ${email}`);
 }
 
+/** The newest email to this address with this subject, from Mailpit; waits for it to arrive. */
+export async function mailTo(request: APIRequestContext, email: string, subject: string): Promise<{ Subject: string; Text: string }> {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const search = await request.get(`${MAILPIT_URL}/api/v1/search`, { params: { query: `to:"${email}" subject:"${subject}"` } });
+    const newest = (await search.json()).messages?.[0];
+    if (newest) {
+      return (await request.get(`${MAILPIT_URL}/api/v1/message/${newest.ID}`)).json();
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error(`No email "${subject}" arrived for ${email}`);
+}
+
 /** Confirms the address with the emailed code, as the code screen does. */
 export async function verifyEmail(request: APIRequestContext, email: string): Promise<void> {
   const response = await request.post('/api/account/accounts/verify', { data: { email, code: await codeFor(request, email) } });

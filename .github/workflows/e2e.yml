@@ -57,9 +57,11 @@ jobs:
           echo "::add-mask::$(openssl rand -base64 32 | tee account.key)"
           echo "INTAKE_DATA_KEY=$(cat intake.key)" >> "$GITHUB_ENV"
           echo "ACCOUNT_DATA_KEY=$(cat account.key)" >> "$GITHUB_ENV"
+          echo "::add-mask::$(openssl rand -base64 32 | tee messaging.key)"
+          echo "MESSAGING_DATA_KEY=$(cat messaging.key)" >> "$GITHUB_ENV"
           echo "::add-mask::$(openssl rand -base64 32 | tee gateway.key)"
           echo "GATEWAY_SECRET=$(cat gateway.key)" >> "$GITHUB_ENV"
-          rm intake.key account.key gateway.key
+          rm intake.key account.key messaging.key gateway.key
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       # These images are only for testing and never deployed, so they may come completely from the cache. The CVE scan
       # and the deploy build the runtime stage fresh, so security updates are never skipped there.
@@ -81,6 +83,15 @@ jobs:
           tags: gp-platform-back-end-intake-service:latest
           cache-from: type=gha,scope=intake-service
           cache-to: type=gha,mode=max,scope=intake-service
+      - name: Build the Messaging Service image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: GP-platform-back-end/messaging-service
+          load: true
+          # The name Docker Compose gives this image, so it starts it instead of building it again.
+          tags: gp-platform-back-end-messaging-service:latest
+          cache-from: type=gha,scope=messaging-service
+          cache-to: type=gha,mode=max,scope=messaging-service
       - name: Build the front-end image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
