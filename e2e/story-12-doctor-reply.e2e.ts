@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { ASSISTANT_EMAIL, GP_EMAIL, cleanTestData, createAccount, mailTo, signIn, signInAsStaff, tokenFor, uniqueEmail } from './support/app';
+import { ASSISTANT_EMAIL, GP_EMAIL, PASSWORD, cleanTestData, createAccount, mailTo, signIn, signInAsStaff, storedRows, tokenFor, uniqueEmail, verifyEmail } from './support/app';
 
 test.beforeAll(() => cleanTestData());
 
@@ -57,5 +57,26 @@ test.describe('[e2e] Story 12: the doctor replies', () => {
     const patient = { Authorization: `Bearer ${await tokenFor(request, other.email)}` };
     expect((await request.post(`/api/messaging/questions/${other.id}/replies`, { headers: patient, data: { text: 'Not allowed' } })).status()).toBe(403);
     expect((await request.get(`/api/messaging/questions/${id}/replies`, { headers: patient })).status()).toBe(404);
+  });
+
+  test("Story 12 TAC4: a patient who deletes their account takes the practice's replies with them", async ({ page, request }) => {
+    const { email, id } = await patientAsks(request, 'E2E question whose reply is deleted with the account');
+    const staff = await request.post('/api/account/accounts', { data: { name: 'E2E Staff', email: GP_EMAIL, password: PASSWORD } });
+    if (staff.status() === 201) {
+      await verifyEmail(request, GP_EMAIL);
+    }
+    const gp = { Authorization: `Bearer ${await tokenFor(request, GP_EMAIL)}` };
+    expect((await request.post(`/api/messaging/questions/${id}/replies`, { headers: gp, data: { text: 'A reply that must go' } })).status()).toBe(201);
+    expect(storedRows('messaging-db', 'messaging', `select id from reply where intake_id = '${id}'`)).toHaveLength(1);
+
+    await signIn(page, email);
+    await expect(page.getByRole('heading', { name: 'Ask the practice a question' })).toBeVisible();
+    await page.goto('/my-data');
+    await expect(page.locator('.my-reply')).toContainText('A reply that must go');
+    await page.getByLabel('I understand this cannot be undone').check();
+    await page.getByRole('button', { name: 'Delete my account' }).click();
+    await expect(page.getByRole('status')).toContainText('Your account and questions have been deleted.');
+
+    expect(storedRows('messaging-db', 'messaging', `select id from reply where intake_id = '${id}'`)).toHaveLength(0);
   });
 });

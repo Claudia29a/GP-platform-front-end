@@ -1,4 +1,5 @@
 import { Intake } from './intake.model';
+import { Reply } from './reply.model';
 import { Role } from './user.model';
 
 /** One time a staff member opened a question. */
@@ -22,4 +23,6 @@ export interface MyData {
   account: AccountData | null;
   privacyConsent: { version: string; acceptedAt: string } | null;
   questions: { question: Intake; openedBy: AccessLogEntry[] }[];
+  /** The GP's replies to these questions, from the Messaging Service. */
+  replies: Reply[];
 }

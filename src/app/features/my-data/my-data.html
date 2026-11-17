@@ -65,6 +65,9 @@
           <span class="badge">{{ statusLabels[item.question.status] }}</span>
         </p>
         <p class="description">{{ item.question.description }}</p>
+        @for (reply of repliesTo(item.question.id); track reply.id) {
+          <p class="my-reply"><strong>Reply from {{ reply.authorName }}</strong>, {{ reply.createdAt | date: 'd MMMM y' }}: {{ reply.text }}</p>
+        }
         <ul class="opened-by">
           @for (entry of item.openedBy; track $index) {
             <li>
@@ -85,7 +88,7 @@
 
     <h2>Delete my account</h2>
     <p>
-      This deletes your account and all your questions straight away. It cannot be undone. Backups are removed after
+      This deletes your account, all your questions and the practice's replies to them straight away. It cannot be undone. Backups are removed after
       7 days. The record of which staff member opened your questions stays, without your answers.
     </p>
     <div class="field">
