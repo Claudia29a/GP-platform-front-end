@@ -1,4 +1,4 @@
-# ${API_URL} is filled in from the environment when the container starts.
+# ${API_URL} and the other ${...} values are filled in from the environment when the container starts.
 server {
     listen 8080;
     root /usr/share/nginx/html;
@@ -9,6 +9,9 @@ server {
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-Frame-Options "DENY" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    # Content Security Policy: the page may only run its own code and Google's sign-in script, and only after the
+    # user chose Google. Inline styles are allowed because Angular adds component styles that way.
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; frame-src https://accounts.google.com/gsi/; connect-src 'self' https://accounts.google.com/gsi/; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
 
     # The settings of this environment, read by the app when it starts. The client ID is public, not a secret.
     location = /config.json {
@@ -21,6 +24,8 @@ server {
     # Sign-up and sign-in with email and password: /api/account/login -> ${ACCOUNT_API_URL}/login (ADR-010).
     location /api/account/ {
         proxy_pass ${ACCOUNT_API_URL}/;
+        # The services accept only requests with this secret, so they cannot be used around the website.
+        proxy_set_header X-CareBridge-Gateway "${GATEWAY_SECRET}";
         proxy_ssl_server_name on;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
@@ -29,6 +34,8 @@ server {
     # Same job as proxy.conf.json during development: /api/intakes -> ${API_URL}/intakes.
     location /api/ {
         proxy_pass ${API_URL}/;
+        # The services accept only requests with this secret, so they cannot be used around the website.
+        proxy_set_header X-CareBridge-Gateway "${GATEWAY_SECRET}";
         proxy_ssl_server_name on;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
@@ -48,6 +55,7 @@ server {
         add_header X-Content-Type-Options "nosniff" always;
         add_header X-Frame-Options "DENY" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; frame-src https://accounts.google.com/gsi/; connect-src 'self' https://accounts.google.com/gsi/; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
         try_files $uri $uri/ /index.html;
     }
 }

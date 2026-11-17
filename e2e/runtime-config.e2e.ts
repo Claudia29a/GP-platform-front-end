@@ -25,6 +25,7 @@ test.describe('[e2e] Settings per environment', () => {
     );
 
     await page.goto('/sign-in');
+    await page.getByRole('button', { name: 'Continue with Google' }).click();
 
     await expect(page.locator('.google-button')).toHaveText('Google button');
     expect(await page.evaluate(() => (window as unknown as { usedClientId: string }).usedClientId)).toBe(googleClientId);

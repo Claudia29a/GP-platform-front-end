@@ -74,6 +74,11 @@ describe('[component] SignIn', () => {
     await fixture.whenStable();
   }
 
+  async function chooseGoogle(): Promise<void> {
+    page.querySelector<HTMLButtonElement>('#google-start')!.click();
+    await fixture.whenStable();
+  }
+
   async function openCreateAccount(): Promise<void> {
     page.querySelector<HTMLButtonElement>('#tab-create')!.click();
     await fixture.whenStable();
@@ -145,14 +150,25 @@ describe('[component] SignIn', () => {
   });
 
   describe('with Google', () => {
-    it('shows the Google button in its place', async () => {
+    it('loads nothing from Google until the user chooses Google', async () => {
       await render();
 
+      expect(google.renderButton).not.toHaveBeenCalled();
+      expect(page.querySelector('#google-start')?.textContent).toContain('Continue with Google');
+    });
+
+    it("shows Google's button in its place after choosing Google", async () => {
+      await render();
+
+      await chooseGoogle();
+
       expect(google.renderButton).toHaveBeenCalledWith(page.querySelector('.google-button'), expect.any(Function));
+      expect(page.querySelector('#google-start')).toBeNull();
     });
 
     it('signs in with the Google token and goes to the start page', async () => {
       await render();
+      await chooseGoogle();
       const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
       onGoogleSignIn('the-id-token');
@@ -164,6 +180,7 @@ describe('[component] SignIn', () => {
 
     it('explains when the back-end cannot be reached', async () => {
       await render();
+      await chooseGoogle();
       auth.signIn.mockRejectedValue(new HttpErrorResponse({ status: 0 }));
 
       onGoogleSignIn('the-id-token');
@@ -174,7 +191,7 @@ describe('[component] SignIn', () => {
 
     it('explains when Google sign-in cannot be loaded', async () => {
       await render({ googleFails: true });
-      await fixture.whenStable();
+      await chooseGoogle();
 
       expect(page.querySelector('.alert')?.textContent).toContain('Google sign-in could not be loaded');
     });

@@ -180,3 +180,19 @@ first sign-in right after starting took 26.8 s.
 | AC3 a long sign-in explains that CareBridge is starting | `component` sign-in.spec |
 | TAC1 the class archive is made in the image with made-up settings, without a database | every Docker build; a failing practice start fails the build |
 | TAC2 a service that cannot be woken shows no error; signing in shows the real message | `unit` wake-up.service.spec |
+
+## Story 11: GDPR leftovers
+
+Test types were chosen with the story, before the code was written.
+
+| Criterion | Proof |
+| --- | --- |
+| AC1 questions older than 6 months are deleted; the queue closes up | `unit` QuestionCleanerTest · `integration` IntakeRepositoryTest |
+| AC2 an email account corrects its name; empty and too-long names get a message | `e2e` Story 11 AC2 TAC3 · `component` my-data.spec · `api` MyDataControllerTest, AccountControllerTest |
+| AC3 nothing loads from Google until the user chooses Google | `e2e` Story 11 AC3 · `component` sign-in.spec |
+| AC4 a Content Security Policy, and every page works with it | `e2e` Story 11 AC4 |
+| AC5 the services refuse requests that do not come through the website | `e2e` Story 11 AC5 TAC2 · `unit` GatewayFilterTest (both services) |
+| TAC1 retention is a setting; the access log stays | `unit` QuestionCleanerTest |
+| TAC2 secret header from nginx, checked in constant time; health checks and the public key stay open | `unit` GatewayFilterTest · `e2e` Story 11 AC5 TAC2 |
+| TAC3 renaming updates the account and the questions, with a new token | `unit` MyDataServiceTest, AccountServiceTest, my-data.service.spec · `integration` IntakeRepositoryTest |
+| TAC4 privacy page, checklist and settings document updated | `component` privacy-page.spec |

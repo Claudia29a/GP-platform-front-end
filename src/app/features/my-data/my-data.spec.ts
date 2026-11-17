@@ -11,7 +11,7 @@ import { MyDataPage } from './my-data';
 describe('[component] MyDataPage', () => {
   let fixture: ComponentFixture<MyDataPage>;
   let page: HTMLElement;
-  let myData: { load: ReturnType<typeof vi.fn>; deleteEverything: ReturnType<typeof vi.fn> };
+  let myData: { load: ReturnType<typeof vi.fn>; deleteEverything: ReturnType<typeof vi.fn>; rename: ReturnType<typeof vi.fn> };
   let auth: { signOut: ReturnType<typeof vi.fn> };
 
   const data: MyData = {
@@ -28,6 +28,7 @@ describe('[component] MyDataPage', () => {
     myData = {
       load: vi.fn().mockReturnValue(result instanceof HttpErrorResponse ? throwError(() => result) : of(result)),
       deleteEverything: vi.fn().mockReturnValue(of(undefined)),
+      rename: vi.fn().mockResolvedValue(undefined),
     };
     auth = { signOut: vi.fn() };
     await TestBed.configureTestingModule({
@@ -109,5 +110,54 @@ describe('[component] MyDataPage', () => {
 
     expect(page.querySelector('[role=alert]')?.textContent).toContain('Something went wrong');
     expect(auth.signOut).not.toHaveBeenCalled();
+  });
+
+  describe('correcting the name', () => {
+    async function typeName(value: string): Promise<void> {
+      const input = page.querySelector<HTMLInputElement>('#new-name')!;
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+      await fixture.whenStable();
+    }
+
+    it('saves a corrected name and confirms it', async () => {
+      await render();
+
+      await typeName('  Anna Jansen ');
+      button('Save name').click();
+      await fixture.whenStable();
+
+      expect(myData.rename).toHaveBeenCalledWith('Anna Jansen');
+      expect(page.querySelector('[role=status]')?.textContent).toContain('Your name has been changed.');
+    });
+
+    it('asks for a name when the field is empty', async () => {
+      await render();
+
+      await typeName('   ');
+      button('Save name').click();
+      await fixture.whenStable();
+
+      expect(myData.rename).not.toHaveBeenCalled();
+      expect(page.querySelector('.name-error')?.textContent).toContain('Please enter your name.');
+    });
+
+    it('explains when saving the name fails', async () => {
+      await render();
+      myData.rename.mockRejectedValue(new HttpErrorResponse({ status: 0 }));
+
+      await typeName('Anna Jansen');
+      button('Save name').click();
+      await fixture.whenStable();
+
+      expect(page.querySelector('[role=alert]')?.textContent).toContain('cannot be reached');
+    });
+
+    it('tells a Google user their name comes from Google', async () => {
+      await render({ ...data, account: null });
+
+      expect(page.querySelector('#new-name')).toBeNull();
+      expect(page.textContent).toContain('Your name comes from your Google account');
+    });
   });
 });

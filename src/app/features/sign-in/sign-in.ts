@@ -1,4 +1,4 @@
-import { Component, ElementRef, InjectionToken, afterNextRender, effect, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, InjectionToken, Injector, afterNextRender, effect, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -36,6 +36,7 @@ export class SignIn {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly wakeUpService = inject(WakeUpService);
   private readonly startingHintAfterMs = inject(STARTING_HINT_AFTER_MS);
+  private readonly injector = inject(Injector);
 
   private readonly googleButton = viewChild.required<ElementRef<HTMLElement>>('googleButton');
   private readonly alert = viewChild<ElementRef<HTMLElement>>('alert');
@@ -48,6 +49,7 @@ export class SignIn {
   protected readonly errorMessage = signal<string | null>(null);
   /** Shown when signing in takes long, which happens while the services are starting. */
   protected readonly starting = signal(false);
+  protected readonly googleChosen = signal(false);
 
   protected readonly rules = PASSWORD_RULES;
   protected readonly maxPasswordLength = MAX_PASSWORD_LENGTH;
@@ -75,11 +77,20 @@ export class SignIn {
     effect(() => this.alert()?.nativeElement.scrollIntoView?.({ block: 'center' }));
     this.wakeUpService.wakeUp();
 
-    afterNextRender(() => {
-      this.google
-        .renderButton(this.googleButton().nativeElement, (token) => void this.complete(Promise.resolve(token)))
-        .catch(() => this.errorMessage.set('Google sign-in could not be loaded. Please check your connection and try again.'));
-    });
+  }
+
+  /** Google's script is loaded only now, so Google learns nothing about visitors who do not choose Google. */
+  protected chooseGoogle(): void {
+    this.googleChosen.set(true);
+    this.errorMessage.set(null);
+    afterNextRender(
+      () => {
+        this.google
+          .renderButton(this.googleButton().nativeElement, (token) => void this.complete(Promise.resolve(token)))
+          .catch(() => this.errorMessage.set('Google sign-in could not be loaded. Please check your connection and try again.'));
+      },
+      { injector: this.injector },
+    );
   }
 
   protected switchTo(mode: Mode): void {

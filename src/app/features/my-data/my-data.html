@@ -36,6 +36,27 @@
       </dd>
     </dl>
 
+    <h2>Correct your name</h2>
+    @if (data.account) {
+      <div class="field">
+        <label for="new-name">New name</label>
+        <input id="new-name" type="text" autocomplete="name" maxlength="120" [formControl]="newName"
+               [attr.aria-describedby]="nameError() ? 'new-name-error' : null" />
+        @if (nameError(); as message) {
+          <p id="new-name-error" class="error name-error">{{ message }}</p>
+        }
+      </div>
+      <button type="button" class="button secondary" [disabled]="savingName()" (click)="saveName()">
+        {{ savingName() ? 'Saving…' : 'Save name' }}
+      </button>
+      @if (nameSaved()) {
+        <p class="info" role="status">Your name has been changed.</p>
+      }
+    } @else {
+      <p>Your name comes from your Google account. To change it, change it in Google and sign in again.</p>
+    }
+    <p class="hint">To use another email address, create a new account and delete this one.</p>
+
     <h2>Your questions ({{ data.questions.length }})</h2>
     @for (item of data.questions; track item.question.id) {
       <article class="question">
