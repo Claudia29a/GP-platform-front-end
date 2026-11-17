@@ -46,6 +46,8 @@ describe('[component] PrivacyPage', () => {
     expect(page.textContent).toContain('My data');
     expect(page.textContent).toContain('which staff member opened your question');
     expect(page.textContent).toContain('not confirmed within 24 hours are deleted');
+    expect(page.textContent).toContain('Questions are deleted 6 months after you sent them');
+    expect(page.textContent).toContain('only when you click Continue with Google');
   });
 
   it('names the email service that sends the confirmation code', async () => {

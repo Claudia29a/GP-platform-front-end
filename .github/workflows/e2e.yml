@@ -51,13 +51,15 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: GP-platform-front-end/package-lock.json
-      - name: Make data keys for this run
+      - name: Make data keys and the gateway secret for this run
         run: |
           echo "::add-mask::$(openssl rand -base64 32 | tee intake.key)"
           echo "::add-mask::$(openssl rand -base64 32 | tee account.key)"
           echo "INTAKE_DATA_KEY=$(cat intake.key)" >> "$GITHUB_ENV"
           echo "ACCOUNT_DATA_KEY=$(cat account.key)" >> "$GITHUB_ENV"
-          rm intake.key account.key
+          echo "::add-mask::$(openssl rand -base64 32 | tee gateway.key)"
+          echo "GATEWAY_SECRET=$(cat gateway.key)" >> "$GITHUB_ENV"
+          rm intake.key account.key gateway.key
       - name: Start the whole platform
         working-directory: GP-platform-back-end
         run: docker compose up -d --build --wait

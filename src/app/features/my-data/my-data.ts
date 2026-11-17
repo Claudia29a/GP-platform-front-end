@@ -30,6 +30,10 @@ export class MyDataPage implements OnInit {
   protected readonly deleting = signal(false);
   protected readonly confirmMissing = signal(false);
   protected readonly confirmed = inject(NonNullableFormBuilder).control(false);
+  protected readonly newName = inject(NonNullableFormBuilder).control('');
+  protected readonly nameError = signal<string | null>(null);
+  protected readonly nameSaved = signal(false);
+  protected readonly savingName = signal(false);
 
   ngOnInit(): void {
     this.myData.load().subscribe({
@@ -42,6 +46,32 @@ export class MyDataPage implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  /** Correct my name (GDPR Art. 16); only for email accounts, a Google user's name comes from Google. */
+  protected async saveName(): Promise<void> {
+    const name = this.newName.value.trim();
+    this.nameSaved.set(false);
+    this.errorMessage.set(null);
+    if (!name) {
+      this.nameError.set('Please enter your name.');
+      return;
+    }
+    if (name.length > 100) {
+      this.nameError.set('Your name can be at most 100 characters.');
+      return;
+    }
+    this.nameError.set(null);
+    this.savingName.set(true);
+    try {
+      await this.myData.rename(name);
+      this.data.update((data) => data && { ...data, user: { ...data.user, name }, account: data.account && { ...data.account, name } });
+      this.nameSaved.set(true);
+    } catch (error) {
+      this.errorMessage.set(httpErrorMessage(error));
+    } finally {
+      this.savingName.set(false);
+    }
   }
 
   protected download(): void {

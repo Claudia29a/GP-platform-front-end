@@ -1,9 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, concatMap, forkJoin, map, of } from 'rxjs';
+import { Observable, concatMap, firstValueFrom, forkJoin, map, of } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth/auth.service';
+import { TokenResponse } from '../auth/account-api.service';
 import { AccountData, MyData } from '../models/my-data.model';
 
 /** The patient's own data from both services: to see, download or delete it. */
@@ -19,6 +20,16 @@ export class MyDataService {
     return forkJoin([this.http.get<Omit<MyData, 'account'>>(`${environment.apiUrl}/me/data`), account]).pipe(
       map(([intakeData, accountData]) => ({ ...intakeData, account: accountData })),
     );
+  }
+
+  /**
+   * Corrects the name of a password account: the account first, which returns a token with the new name, then the
+   * name on the questions. A Google user's name comes from Google.
+   */
+  async rename(name: string): Promise<void> {
+    const response = await firstValueFrom(this.http.put<TokenResponse>(`${environment.accountApiUrl}/accounts/me`, { name }));
+    await this.auth.signIn(response.token);
+    await firstValueFrom(this.http.put<void>(`${environment.apiUrl}/me/data/name`, { name }));
   }
 
   /** Questions first: if that fails, the account still exists, so the user can sign in and try again. */

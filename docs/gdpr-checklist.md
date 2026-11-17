@@ -14,18 +14,18 @@ Health data is special category data (Article 9), the strictest kind. A question
 
 | Data | Where | Why it is needed | Kept for |
 | --- | --- | --- | --- |
-| Complaint area, duration, severity, symptoms, medication, treatment, description | Intake database, **encrypted** | The GP needs it to answer | No limit yet |
-| Name and email on each question | Intake database, **encrypted** | Knowing whose question it is, and replying | No limit yet |
-| Patient ID on each question | Intake database, **hashed** | Finding a patient's own questions | No limit yet |
-| Severity score, queue position, status, time sent | Intake database, readable, because the database sorts on them | Ordering the queue | No limit yet |
+| Complaint area, duration, severity, symptoms, medication, treatment, description | Intake database, **encrypted** | The GP needs it to answer | 6 months, or until the patient deletes them |
+| Name and email on each question | Intake database, **encrypted** | Knowing whose question it is, and replying | 6 months, or until the patient deletes them |
+| Patient ID on each question | Intake database, **hashed** | Finding a patient's own questions | 6 months, or until the patient deletes them |
+| Severity score, queue position, status, time sent | Intake database, readable, because the database sorts on them | Ordering the queue | 6 months, or until the patient deletes them |
 | Permission: hashed user, version, time | Intake database | Proving the patient allowed it | Until withdrawn |
 | Name, email | Account database, **encrypted** | Email sign-in | Until deleted; unconfirmed accounts after 24 hours |
 | Whether the email is confirmed; hash of the confirmation code | Account database | Proving the address is real | The code hash: until used or replaced, at most 15 minutes valid |
 | Hash of the IP address at sign-up | Account database | Stopping accounts being created in bulk | 1 hour |
 | Access log: question ID, staff name (**encrypted**), staff ID (**hashed**), role, time | Intake database | Record of who opened which question | No limit yet; kept after the question is deleted, without patient data |
-| Email for finding the account | Account database, **hashed** | Email sign-in | No limit yet |
-| Password | Account database, **BCrypt hash** | Email sign-in | No limit yet |
-| Failed sign-ins, lock time, created time | Account database, readable | Locking after wrong passwords | No limit yet |
+| Email for finding the account | Account database, **hashed** | Email sign-in | Until the account is deleted; unconfirmed accounts after 24 hours |
+| Password | Account database, **BCrypt hash** | Email sign-in | Until the account is deleted; unconfirmed accounts after 24 hours |
+| Failed sign-ins, lock time, created time | Account database, readable | Locking after wrong passwords | Until the account is deleted; unconfirmed accounts after 24 hours |
 | Staff email addresses | Azure settings, local `.env`; never in git | Deciding who has a staff role | Until removed by hand |
 | IP addresses, requested URLs | Container logs in Azure Log Analytics | Finding faults | 30 days |
 | Sign-in token | Browser `sessionStorage` | Staying signed in | Until the tab closes |
@@ -41,14 +41,14 @@ Health data is special category data (Article 9), the strictest kind. A question
 | Telling people what happens to their data (Art. 12, 13) | ✅ | A privacy page, open to everyone, linked from sign-in, the footer and the popup | A real practice adds its name and contact details. |
 | Only the data that is needed (Art. 5(1)(c)) | 🟡 | The form asks structured questions; the score and queue position are hidden from patients | The patient's own ID and email are repeated in every question and answer; free-text boxes invite more than is needed. |
 | Correct data (Art. 5(1)(d)) | ✅ | Input is checked on the front-end and back-end; email addresses are confirmed with an emailed code before a question can be sent | |
-| Storage limit (Art. 5(1)(e)) | 🟡 | Unconfirmed accounts are deleted after 24 hours; patients can delete everything themselves | A retention period and clean-up for questions. Dutch medical records are normally kept for 20 years, so the practice must decide what counts as part of the record. |
+| Storage limit (Art. 5(1)(e)) | ✅ | Questions are deleted after 6 months, unconfirmed accounts after 24 hours; patients can delete everything earlier | A real practice must check the legal retention period for medical records first. |
 
 ## Rights of the patient
 
 | Right | Status | Today | Still needed |
 | --- | --- | --- | --- |
 | See their data (Art. 15) | ✅ | My data shows everything stored, including who opened each question | |
-| Correct their data (Art. 16) | ❌ **must** | No way to edit a question, name or email | A way to correct details, or to ask the practice to. |
+| Correct their data (Art. 16) | 🟡 | Email accounts correct their name under My data; a Google user's name comes from Google | Changing the email address means a new account. |
 | Delete their data (Art. 17) | ✅ | Delete my account removes the account, questions and permission at once; backups clear after 7 days | A real practice must check the legal retention period for medical records first. |
 | Take their data with them (Art. 20) | ✅ | Download my data gives one JSON file | |
 | Limit or object (Art. 18, 21) | 📄 | No process | A contact address and a process at the practice. |
@@ -65,9 +65,9 @@ Health data is special category data (Article 9), the strictest kind. A question
 | Secrets (Art. 32) | ✅ | Azure secrets and GitHub settings, never in git | |
 | Known vulnerabilities (Art. 32) | ✅ | Trivy gate blocks deploys, weekly scan, Dependabot, SonarQube for own code | |
 | Logs without health data (Art. 5, 32) | ✅ | The code writes no patient data to logs | Keep this rule when adding logging. |
-| Network (Art. 32) | ❌ **must** | The services can be reached from the internet directly (measured on 4 November 2026), though data still needs a token. The database firewall accepts any Azure customer's server, though it still needs a password. | Close the service route; limit the database to CareBridge. |
+| Network (Art. 32) | 🟡 | The services refuse every request that does not come through the website (secret header from nginx). The database accepts Azure services only, with a separate user per service and required TLS | Narrowing the database firewall to CareBridge alone needs a paid virtual network; not possible at €0. |
 | Who looked at a record (Art. 32) | ✅ | Every time staff open a question it is recorded; the GP sees it per question, the patient under My data | The queue overview is not logged per question; NEN 7513 asks more detail for a real practice. |
-| Browser protection (Art. 32) | 🟡 | `nosniff`, frame blocking and referrer policy are set | Add a Content Security Policy. |
+| Browser protection (Art. 32) | ✅ | `nosniff`, frame blocking, referrer policy and a Content Security Policy | |
 | Test data (Art. 25) | ✅ | Automated tests use made-up data | Keep the live site on made-up data as well. |
 
 ## Other companies and data leaving the EU
@@ -75,7 +75,7 @@ Health data is special category data (Article 9), the strictest kind. A question
 | Company | Role | Data | Status | Still needed |
 | --- | --- | --- | --- | --- |
 | Microsoft Azure | Hosting, database, logs | Everything above, in Sweden Central | 🟡 | Check that the data processing terms apply: this runs on a student subscription. |
-| Google | Sign-in | Name, email; the sign-in page loads a Google script, which sends the visitor's IP address to Google even if they choose email | ❌ | Load the script only when someone chooses Google (the privacy page already says it happens); record the transfer outside the EU (Art. 44 to 46). |
+| Google | Sign-in | Name, email, and the visitor's IP address once they click Continue with Google | ✅ | The script loads only after the user chooses Google; the privacy page says so. A real practice records the transfer outside the EU (Art. 44 to 46). |
 | Email provider (to be chosen) | Sends the confirmation code | Email address and the code; never questions | 🟡 | Choose an EU-hosted provider and accept its data processing terms; the privacy page already names the service. |
 | GitHub | Code and images | No patient data; test reports use made-up data | ✅ | |
 
@@ -99,7 +99,5 @@ The next feature touches this checklist directly, so it starts with these rules:
 
 In order of importance. Each becomes a user story, with acceptance criteria and tests first.
 
-1. Close the direct route to the services and limit the database firewall.
-2. Correct my details.
-3. Automatic clean-up of questions after a retention period (unconfirmed accounts are already cleaned up).
-4. Load the Google script only on request; add a Content Security Policy.
+1. Changing the email address of an account.
+2. Narrowing the database firewall, once a paid virtual network is possible.

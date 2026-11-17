@@ -11,6 +11,7 @@ describe('[unit] MyDataService', () => {
   let service: MyDataService;
   let http: HttpTestingController;
   let passwordAccount: boolean;
+  let signIn: ReturnType<typeof vi.fn>;
 
   const intakeData = {
     user: { id: 'account-1', name: 'Anna', email: 'anna@example.com' },
@@ -20,11 +21,12 @@ describe('[unit] MyDataService', () => {
 
   beforeEach(() => {
     passwordAccount = true;
+    signIn = vi.fn().mockResolvedValue(undefined);
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: AuthService, useValue: { isPasswordAccount: () => passwordAccount } },
+        { provide: AuthService, useValue: { isPasswordAccount: () => passwordAccount, signIn } },
       ],
     });
     service = TestBed.inject(MyDataService);
@@ -72,5 +74,19 @@ describe('[unit] MyDataService', () => {
     http.expectOne(`${environment.apiUrl}/me/data`).flush(null, { status: 500, statusText: 'Server Error' });
 
     expect(failed).toBe(true);
+  });
+
+  it('renames the account first, signs in with the new token, then renames the questions', async () => {
+    const done = service.rename('Anna Jansen');
+
+    const account = http.expectOne({ method: 'PUT', url: `${environment.accountApiUrl}/accounts/me` });
+    expect(account.request.body).toEqual({ name: 'Anna Jansen' });
+    account.flush({ token: 'renamed-token', tokenType: 'Bearer', expiresIn: 3600 });
+    await vi.waitFor(() => expect(signIn).toHaveBeenCalledWith('renamed-token'));
+    const questions = http.expectOne({ method: 'PUT', url: `${environment.apiUrl}/me/data/name` });
+    expect(questions.request.body).toEqual({ name: 'Anna Jansen' });
+    questions.flush(null, { status: 204, statusText: 'No Content' });
+
+    await done;
   });
 });

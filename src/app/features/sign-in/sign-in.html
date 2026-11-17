@@ -17,7 +17,13 @@
     </p>
   }
 
-  <div #googleButton class="google-button" [class.hidden]="busy()"></div>
+  @if (!googleChosen()) {
+    <button id="google-start" type="button" class="button secondary google-start" (click)="chooseGoogle()">
+      Continue with Google
+    </button>
+    <p class="google-note">Google's sign-in is loaded only when you choose it.</p>
+  }
+  <div #googleButton class="google-button" [class.hidden]="busy() || !googleChosen()"></div>
 
   <p class="divider"><span>or use your email address</span></p>
 
