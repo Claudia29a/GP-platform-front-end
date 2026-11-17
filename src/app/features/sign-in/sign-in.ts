@@ -1,4 +1,4 @@
-import { Component, ElementRef, afterNextRender, effect, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, InjectionToken, afterNextRender, effect, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -8,6 +8,10 @@ import { AccountApiService, accountErrorMessage } from '../../core/auth/account-
 import { AuthService } from '../../core/auth/auth.service';
 import { GoogleIdentityService } from '../../core/auth/google-identity.service';
 import { MAX_PASSWORD_LENGTH, PASSWORD_RULES, passwordRulesValidator } from '../../core/auth/password-rules';
+import { WakeUpService } from '../../core/services/wake-up.service';
+
+/** After this many milliseconds, signing in explains that the services are starting. */
+export const STARTING_HINT_AFTER_MS = new InjectionToken<number>('STARTING_HINT_AFTER_MS', { factory: () => 3000 });
 
 type Mode = 'sign-in' | 'create';
 
@@ -30,6 +34,8 @@ export class SignIn {
   private readonly accounts = inject(AccountApiService);
   private readonly router = inject(Router);
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly wakeUpService = inject(WakeUpService);
+  private readonly startingHintAfterMs = inject(STARTING_HINT_AFTER_MS);
 
   private readonly googleButton = viewChild.required<ElementRef<HTMLElement>>('googleButton');
   private readonly alert = viewChild<ElementRef<HTMLElement>>('alert');
@@ -40,6 +46,8 @@ export class SignIn {
   protected readonly mode = signal<Mode>('sign-in');
   protected readonly busy = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+  /** Shown when signing in takes long, which happens while the services are starting. */
+  protected readonly starting = signal(false);
 
   protected readonly rules = PASSWORD_RULES;
   protected readonly maxPasswordLength = MAX_PASSWORD_LENGTH;
@@ -65,6 +73,7 @@ export class SignIn {
   constructor() {
     // On a small screen the message can appear below the visible part of the page.
     effect(() => this.alert()?.nativeElement.scrollIntoView?.({ block: 'center' }));
+    this.wakeUpService.wakeUp();
 
     afterNextRender(() => {
       this.google
@@ -116,12 +125,15 @@ export class SignIn {
   private async complete(token: Promise<string>): Promise<void> {
     this.busy.set(true);
     this.errorMessage.set(null);
+    const hint = setTimeout(() => this.starting.set(true), this.startingHintAfterMs);
     try {
       await this.auth.signIn(await token);
       await this.router.navigate(['/']);
     } catch (error) {
       this.errorMessage.set(accountErrorMessage(error));
     } finally {
+      clearTimeout(hint);
+      this.starting.set(false);
       this.busy.set(false);
     }
   }
