@@ -1,5 +1,5 @@
 # Front-end pipeline (SAD v2, section 8.2).
-# Every push and pull request: test and build. Pull requests into main and pushes to main also get the
+# Every pull request, and every push to main: test and build. Pull requests into main and pushes to main also get the
 # SonarQube Cloud analysis and its quality gate (the Free plan analyses nothing else).
 # Then the end-to-end tests prove the acceptance criteria on the whole platform, and Trivy checks for known CVEs.
 # Push to main, only when all of that passed: build the image, push it to GHCR and deploy to Azure.
@@ -7,7 +7,9 @@
 name: frontend
 
 on:
+  # A branch is tested through its pull request; a push only starts a run on main, so nothing runs twice.
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -75,8 +77,11 @@ jobs:
           tags: |
             ${{ env.IMAGE }}:${{ github.sha }}
             ${{ env.IMAGE }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # One cache per image. The runtime stage is always rebuilt, so new security updates are never skipped.
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+          no-cache-filters: runtime
+          pull: true
       - uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         # Login works without a password via OpenID Connect. The IDs are secrets, so only this step gets them
         # and GitHub hides them in the logs.

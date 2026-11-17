@@ -12,7 +12,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: serve the built files with nginx (runs as a non-root user on port 8080).
-FROM nginxinc/nginx-unprivileged:1.31-alpine
+FROM nginxinc/nginx-unprivileged:1.31-alpine AS runtime
 # The base image can lag behind Alpine's security fixes. Afterwards back to the image's non-root user.
 USER root
 RUN apk upgrade --no-cache

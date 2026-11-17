@@ -60,9 +60,40 @@ jobs:
           echo "::add-mask::$(openssl rand -base64 32 | tee gateway.key)"
           echo "GATEWAY_SECRET=$(cat gateway.key)" >> "$GITHUB_ENV"
           rm intake.key account.key gateway.key
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Build the Account Service image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: GP-platform-back-end/account-service
+          load: true
+          # The name Docker Compose gives this image, so it starts it instead of building it again.
+          tags: gp-platform-back-end-account-service:latest
+          cache-from: type=gha,scope=account-service
+          cache-to: type=gha,mode=max,scope=account-service
+          no-cache-filters: runtime
+      - name: Build the Intake Service image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: GP-platform-back-end/intake-service
+          load: true
+          # The name Docker Compose gives this image, so it starts it instead of building it again.
+          tags: gp-platform-back-end-intake-service:latest
+          cache-from: type=gha,scope=intake-service
+          cache-to: type=gha,mode=max,scope=intake-service
+          no-cache-filters: runtime
+      - name: Build the front-end image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: GP-platform-front-end
+          load: true
+          # The name Docker Compose gives this image, so it starts it instead of building it again.
+          tags: gp-platform-back-end-frontend:latest
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+          no-cache-filters: runtime
       - name: Start the whole platform
         working-directory: GP-platform-back-end
-        run: docker compose up -d --build --wait
+        run: docker compose up -d --no-build --wait
       - name: Install the test browser
         working-directory: GP-platform-front-end
         run: |

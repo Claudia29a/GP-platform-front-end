@@ -41,7 +41,7 @@ Every setting has a priority: how bad it is when the value leaks or is lost. The
 
 **Retention:** questions are deleted 6 months after they were sent (`carebridge.retention.question-age`), unconfirmed accounts after 24 hours.
 
-**Sign-up and clean-up:** `SIGNUP_UNCHECKED_EMAIL_DOMAINS` lists test domains (such as `example.com`, which takes no mail) that may sign up anyway; it is set locally and in the pipeline and stays empty on Azure. `ACCOUNT_CLEANUP_INTERVAL` (default `PT1H`) sets how often unconfirmed accounts older than a day are deleted; locally it is 10 seconds so the tests can watch it.
+**Sign-up and clean-up:** `SIGNUP_UNCHECKED_EMAIL_DOMAINS` lists test domains (such as `example.com`, which takes no mail) that may sign up anyway; it is set locally and in the pipeline and stays empty on Azure. `ACCOUNT_CLEANUP_INTERVAL` (default `PT1H`) sets how often unconfirmed accounts older than a day are deleted; locally it is 2 seconds so the tests can watch it.
 
 **Email:** locally and in the pipeline, `docker-compose.yml` sends every email to Mailpit, which catches it (http://localhost:8025). In production `MAIL_*` point to the email provider, with `MAIL_AUTH` and `MAIL_STARTTLS_REQUIRED` set to `true`.
 
