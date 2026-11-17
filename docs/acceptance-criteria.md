@@ -196,3 +196,18 @@ Test types were chosen with the story, before the code was written.
 | TAC2 secret header from nginx, checked in constant time; health checks and the public key stay open | `unit` GatewayFilterTest · `e2e` Story 11 AC5 TAC2 |
 | TAC3 renaming updates the account and the questions, with a new token | `unit` MyDataServiceTest, AccountServiceTest, my-data.service.spec · `integration` IntakeRepositoryTest |
 | TAC4 privacy page, checklist and settings document updated | `component` privacy-page.spec |
+
+## Story 12: the doctor replies
+
+Test types were chosen with the story, before the code was written. The replies live in a separate Messaging
+Service with its own database (SAD v2).
+
+| Criterion | Proof |
+| --- | --- |
+| AC1 the GP writes a reply; an empty one gets a message | `e2e` Story 12 AC1 AC2 AC3 · `component` intake-detail.spec · `api` ReplyControllerTest |
+| AC2 the patient sees the reply on their question | `e2e` Story 12 AC1 AC2 AC3 · `component` intake-detail.spec |
+| AC3 the patient gets an email without health details | `e2e` Story 12 AC1 AC2 AC3 · `unit` ReplyNotifierTest |
+| AC4 only the GP replies; patients read only their own replies | `e2e` Story 12 AC4 · `api` ReplyControllerTest · `unit` ReplyServiceTest |
+| TAC1 own service and database; replies stored encrypted | `integration` ReplyRepositoryTest |
+| TAC2 access asked to the Intake Service with the user's token, not counted as opening the question | `unit` IntakeClientTest, ReplyServiceTest, IntakeServiceTest · `api` IntakeControllerTest |
+| TAC3 a failed email does not lose the reply | `unit` ReplyNotifierTest |

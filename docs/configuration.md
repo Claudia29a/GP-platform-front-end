@@ -22,7 +22,7 @@ Every setting has a priority: how bad it is when the value leaks or is lost. The
 | `ACCOUNT_DB_PASSWORD` | Account Service | High | Azure secret | Database access; the firewall also only allows Azure |
 | `SONAR_TOKEN` | Pipelines | High | GitHub secret | Can change the code quality results |
 | `MAIL_PASSWORD` | Account Service | High | Azure secret | Lets someone send email as CareBridge |
-| `GATEWAY_SECRET` | Front-end, Intake Service, Account Service | High | Azure secret, the same value on all three | Lets requests past the services' gate without going through the website |
+| `GATEWAY_SECRET` | Front-end, Intake, Account and Messaging Service | High | Azure secret, the same value on all three | Lets requests past the services' gate without going through the website |
 | `GP_EMAILS`, `ASSISTANT_EMAILS` | Intake Service | Personal | Azure secret | Who gets a staff role; never in git |
 | `INTAKE_DB_URL`, `INTAKE_DB_USER` | Intake Service | Public | Azure variable | Useless without the password |
 | `ACCOUNT_DB_URL`, `ACCOUNT_DB_USER` | Account Service | Public | Azure variable | Useless without the password |
@@ -34,6 +34,8 @@ Every setting has a priority: how bad it is when the value leaks or is lost. The
 | `AZURE_RESOURCE_GROUP`, `IMAGE_PREFIX` | Pipelines | Public | GitHub variable | Only names; as secrets, GitHub would hide them in every log line |
 
 **When a setting is missing**, the service or front-end refuses to start. Two exceptions: empty staff lists make everyone a patient, and an empty `ACCOUNT_TOKEN_PRIVATE_KEY` makes a temporary key, which signs everyone out at each restart (only meant for a laptop).
+
+**Messaging Service:** its own database (`MESSAGING_DB_URL`, `MESSAGING_DB_USER`, `MESSAGING_DB_PASSWORD` as a secret), its own data key (`MESSAGING_DATA_KEY`, Critical, a secret with a backup), the same sign-in settings and staff lists as the Intake Service, `INTAKE_API_URL` (where the Intake Service is), the same `MAIL_*` settings as the Account Service and `SITE_URL` (the link in the email). The front-end needs `MESSAGING_API_URL`.
 
 **Gateway:** nginx in the front-end adds `GATEWAY_SECRET` as the header `X-CareBridge-Gateway` to every request it forwards. The services refuse every request without it (403), except health checks and the Account Service's public key. On Azure all three apps use external ingress, because the new Express environment does not route internal ingress after a deploy; the gateway secret is what keeps the services private.
 
