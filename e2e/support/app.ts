@@ -70,6 +70,12 @@ export function cleanTestData(): void {
   sql('account-db', 'account', 'delete from sign_up');
 }
 
+/** Makes an account look older in the database, so the clean-up of unconfirmed accounts treats it as overdue. */
+export function makeAccountOlder(email: string, hours: number): void {
+  const accounts = accountIdsWith((stored) => stored === email);
+  sql('account-db', 'account', `update account set created_at = now() - interval '${hours} hours' where id in (${quoted(accounts)})`);
+}
+
 /** Reads the newest code emailed to this address, like a user opening their inbox. Waits for it to arrive. */
 export async function codeFor(request: APIRequestContext, email: string, after = 0): Promise<string> {
   for (let attempt = 0; attempt < 20; attempt++) {

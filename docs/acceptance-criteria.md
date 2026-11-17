@@ -144,3 +144,18 @@ Test types were chosen with the story, before the code was written.
 | TAC3 staff name encrypted, ID hashed, log kept after deletion | `unit` AccessLogServiceTest · `integration` IntakeRepositoryTest |
 | TAC4 only the GP reads the access log | `e2e` Story 8 TAC1 TAC4 · `api` MyDataControllerTest |
 | TAC5 privacy page and checklist describe these rights | `component` privacy-page.spec |
+
+## Story 9: stricter sign-up
+
+Test types were chosen with the story, before the code was written.
+
+| Criterion | Proof |
+| --- | --- |
+| AC1 an address whose domain cannot receive email is refused, with a message | `e2e` Story 9 AC1 · `component` sign-in.spec · `unit` MailDomainCheckerTest, account-api.service.spec · `api` AccountControllerTest |
+| AC2 real mail domains can still sign up | `unit` MailDomainCheckerTest · `integration` DnsDomainResolverIntegrationTest |
+| AC3 unconfirmed accounts are deleted after 24 hours; the address can sign up again | `e2e` Story 9 AC3 TAC3 · `unit` UnconfirmedAccountCleanerTest · `integration` AccountServiceIntegrationTest |
+| AC4 the code screen and privacy page say so | `component` verify-email.spec, privacy-page.spec |
+| TAC1 MX lookup; no domain, no MX and no address, or "MX 0 ." gives 422 | `unit` MailDomainCheckerTest · `integration` DnsDomainResolverIntegrationTest |
+| TAC2 DNS not answering allows the sign-up | `unit` MailDomainCheckerTest |
+| TAC3 the clean-up runs at start-up and every hour; confirmed accounts stay | `e2e` Story 9 TAC3 · `integration` AccountServiceIntegrationTest |
+| TAC4 test domains are only skipped when the setting lists them | `unit` MailDomainCheckerTest |

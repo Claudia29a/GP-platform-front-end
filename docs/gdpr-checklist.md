@@ -19,7 +19,7 @@ Health data is special category data (Article 9), the strictest kind. A question
 | Patient ID on each question | Intake database, **hashed** | Finding a patient's own questions | No limit yet |
 | Severity score, queue position, status, time sent | Intake database, readable, because the database sorts on them | Ordering the queue | No limit yet |
 | Permission: hashed user, version, time | Intake database | Proving the patient allowed it | Until withdrawn |
-| Name, email | Account database, **encrypted** | Email sign-in | No limit yet |
+| Name, email | Account database, **encrypted** | Email sign-in | Until deleted; unconfirmed accounts after 24 hours |
 | Whether the email is confirmed; hash of the confirmation code | Account database | Proving the address is real | The code hash: until used or replaced, at most 15 minutes valid |
 | Hash of the IP address at sign-up | Account database | Stopping accounts being created in bulk | 1 hour |
 | Access log: question ID, staff name (**encrypted**), staff ID (**hashed**), role, time | Intake database | Record of who opened which question | No limit yet; kept after the question is deleted, without patient data |
@@ -41,7 +41,7 @@ Health data is special category data (Article 9), the strictest kind. A question
 | Telling people what happens to their data (Art. 12, 13) | ✅ | A privacy page, open to everyone, linked from sign-in, the footer and the popup | A real practice adds its name and contact details. |
 | Only the data that is needed (Art. 5(1)(c)) | 🟡 | The form asks structured questions; the score and queue position are hidden from patients | The patient's own ID and email are repeated in every question and answer; free-text boxes invite more than is needed. |
 | Correct data (Art. 5(1)(d)) | ✅ | Input is checked on the front-end and back-end; email addresses are confirmed with an emailed code before a question can be sent | |
-| Storage limit (Art. 5(1)(e)) | ❌ **must** | Nothing is ever deleted | A retention period and an automatic clean-up. Dutch medical records are normally kept for 20 years, so the practice must decide what counts as part of the record. |
+| Storage limit (Art. 5(1)(e)) | 🟡 | Unconfirmed accounts are deleted after 24 hours; patients can delete everything themselves | A retention period and clean-up for questions. Dutch medical records are normally kept for 20 years, so the practice must decide what counts as part of the record. |
 
 ## Rights of the patient
 
@@ -101,5 +101,5 @@ In order of importance. Each becomes a user story, with acceptance criteria and 
 
 1. Close the direct route to the services and limit the database firewall.
 2. Correct my details.
-3. Automatic clean-up after the retention period.
+3. Automatic clean-up of questions after a retention period (unconfirmed accounts are already cleaned up).
 4. Load the Google script only on request; add a Content Security Policy.

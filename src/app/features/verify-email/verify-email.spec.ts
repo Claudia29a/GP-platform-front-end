@@ -63,6 +63,7 @@ describe('[component] VerifyEmail', () => {
     expect(page.querySelector('h1')?.textContent).toContain('Check your email');
     expect(page.textContent).toContain('bram@example.com');
     expect(page.textContent).toContain('15 minutes');
+    expect(page.textContent).toContain('not confirmed within 24 hours is deleted');
   });
 
   it('asks for the code before sending anything', async () => {

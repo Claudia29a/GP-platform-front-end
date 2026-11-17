@@ -68,6 +68,9 @@ describe('[unit] accountErrorMessage', () => {
       accountErrorMessage(new HttpErrorResponse({ status, url, headers: retryAfter ? new HttpHeaders({ 'Retry-After': retryAfter }) : undefined }));
 
     expect(error(429, '/api/account/accounts')).toBe('Too many accounts were created from this device. Please try again later.');
+    expect(error(422, '/api/account/accounts')).toBe(
+      'No email can be delivered to this address. Please check it for typos, for example gmial.com instead of gmail.com.',
+    );
     expect(error(400, '/api/account/accounts/verify')).toBe(
       'This code is not correct or has expired. Please check the email or ask for a new code.',
     );

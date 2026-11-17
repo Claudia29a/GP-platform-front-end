@@ -265,6 +265,21 @@ describe('[component] SignIn', () => {
       expect(accounts.login).not.toHaveBeenCalled();
     });
 
+    it('explains when the address cannot receive email', async () => {
+      await render();
+      accounts.register.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 422, url: '/api/account/accounts' })));
+      await openCreateAccount();
+
+      await type('create-name', 'Bram');
+      await type('create-email', 'bram@gmial.con');
+      await type('create-password', 'Secret12');
+      await type('create-confirm', 'Secret12');
+      await submit();
+
+      expect(page.querySelector('.alert')?.textContent).toContain('Please check it for typos');
+      expect(accounts.login).not.toHaveBeenCalled();
+    });
+
     it('explains when too many accounts were created from this device', async () => {
       await render();
       accounts.register.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 429, url: '/api/account/accounts' })));
