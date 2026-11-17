@@ -92,3 +92,10 @@ dd {
   font-size: 0.875rem;
   color: var(--muted);
 }
+
+.my-reply {
+  border-left: 3px solid var(--primary);
+  padding-left: 0.6rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth/auth.service';
 import { TokenResponse } from '../auth/account-api.service';
 import { AccountData, MyData } from '../models/my-data.model';
+import { Reply } from '../models/reply.model';
 
 /** The patient's own data from both services: to see, download or delete it. */
 @Injectable({ providedIn: 'root' })
@@ -17,9 +18,11 @@ export class MyDataService {
     const account = this.auth.isPasswordAccount()
       ? this.http.get<AccountData>(`${environment.accountApiUrl}/accounts/me`)
       : of(null);
-    return forkJoin([this.http.get<Omit<MyData, 'account'>>(`${environment.apiUrl}/me/data`), account]).pipe(
-      map(([intakeData, accountData]) => ({ ...intakeData, account: accountData })),
-    );
+    return forkJoin([
+      this.http.get<Omit<MyData, 'account' | 'replies'>>(`${environment.apiUrl}/me/data`),
+      this.http.get<Reply[]>(`${environment.messagingApiUrl}/me/replies`),
+      account,
+    ]).pipe(map(([intakeData, replies, accountData]) => ({ ...intakeData, replies, account: accountData })));
   }
 
   /**
@@ -32,9 +35,13 @@ export class MyDataService {
     await firstValueFrom(this.http.put<void>(`${environment.apiUrl}/me/data/name`, { name }));
   }
 
-  /** Questions first: if that fails, the account still exists, so the user can sign in and try again. */
+  /**
+   * Replies first, while the questions still say whose they are; then the questions; then the account. If a step
+   * fails, the account still exists, so the user can sign in and try again.
+   */
   deleteEverything(): Observable<void> {
-    return this.http.delete<void>(`${environment.apiUrl}/me/data`).pipe(
+    return this.http.delete<void>(`${environment.messagingApiUrl}/me/replies`).pipe(
+      concatMap(() => this.http.delete<void>(`${environment.apiUrl}/me/data`)),
       concatMap(() =>
         this.auth.isPasswordAccount() ? this.http.delete<void>(`${environment.accountApiUrl}/accounts/me`) : of(undefined),
       ),

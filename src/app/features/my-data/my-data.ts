@@ -74,6 +74,10 @@ export class MyDataPage implements OnInit {
     }
   }
 
+  protected repliesTo(questionId: string) {
+    return this.data()?.replies.filter((reply) => reply.questionId === questionId) ?? [];
+  }
+
   protected download(): void {
     const data = this.data();
     if (!data) {

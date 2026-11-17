@@ -22,6 +22,7 @@ describe('[component] MyDataPage', () => {
       { question: testIntake(), openedBy: [{ staffName: 'Dr. Jansen', role: 'GP', viewedAt: '2026-11-11T11:00:00Z' }] },
       { question: testIntake({ id: 'question-2', description: 'Cough' }), openedBy: [] },
     ],
+    replies: [{ id: 'reply-1', questionId: testIntake().id, authorName: 'Dr. Jansen', text: 'Please use the cream twice a day.', createdAt: '2026-11-17T10:00:00Z' }],
   };
 
   async function render(result: MyData | HttpErrorResponse = data) {
@@ -54,6 +55,8 @@ describe('[component] MyDataPage', () => {
     expect(page.textContent).toContain('11 November 2026');
     expect(page.textContent).toContain('Opened by Dr. Jansen (GP)');
     expect(page.textContent).toContain('Nobody at the practice has opened this question yet.');
+    expect(page.querySelector('.my-reply')?.textContent).toContain('Please use the cream twice a day.');
+    expect(page.querySelectorAll('.my-reply')).toHaveLength(1);
   });
 
   it('explains when the data cannot be loaded', async () => {
@@ -74,6 +77,7 @@ describe('[component] MyDataPage', () => {
     const file = createObjectURL.mock.calls[0][0] as Blob;
     expect(file.type).toBe('application/json');
     expect(JSON.parse(await file.text()).questions).toHaveLength(2);
+    expect(JSON.parse(await file.text()).replies).toHaveLength(1);
     expect((click.mock.instances[0] as unknown as HTMLAnchorElement).download).toMatch(/^carebridge-my-data-\d{4}-\d{2}-\d{2}\.json$/);
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:my-data');
     click.mockRestore();
