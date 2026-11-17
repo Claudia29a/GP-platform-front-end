@@ -61,6 +61,8 @@ jobs:
           echo "GATEWAY_SECRET=$(cat gateway.key)" >> "$GITHUB_ENV"
           rm intake.key account.key gateway.key
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      # These images are only for testing and never deployed, so they may come completely from the cache. The CVE scan
+      # and the deploy build the runtime stage fresh, so security updates are never skipped there.
       - name: Build the Account Service image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
@@ -70,7 +72,6 @@ jobs:
           tags: gp-platform-back-end-account-service:latest
           cache-from: type=gha,scope=account-service
           cache-to: type=gha,mode=max,scope=account-service
-          no-cache-filters: runtime
       - name: Build the Intake Service image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
@@ -80,7 +81,6 @@ jobs:
           tags: gp-platform-back-end-intake-service:latest
           cache-from: type=gha,scope=intake-service
           cache-to: type=gha,mode=max,scope=intake-service
-          no-cache-filters: runtime
       - name: Build the front-end image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
@@ -90,7 +90,6 @@ jobs:
           tags: gp-platform-back-end-frontend:latest
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
-          no-cache-filters: runtime
       - name: Start the whole platform
         working-directory: GP-platform-back-end
         run: docker compose up -d --no-build --wait
