@@ -211,3 +211,5 @@ Service with its own database (SAD v2).
 | TAC1 own service and database; replies stored encrypted | `integration` ReplyRepositoryTest |
 | TAC2 access asked to the Intake Service with the user's token, not counted as opening the question | `unit` IntakeClientTest, ReplyServiceTest, IntakeServiceTest · `api` IntakeControllerTest |
 | TAC3 a failed email does not lose the reply | `unit` ReplyNotifierTest |
+| AC5 a patient who deletes their account also deletes the replies; My data shows and downloads them | `e2e` Story 12 TAC4 · `component` my-data.spec · `unit` my-data.service.spec, ReplyServiceTest · `api` MyRepliesControllerTest, MyDataControllerTest |
+| TAC4 replies are deleted with their question: with the account, and 6 months after the question was sent | `e2e` Story 12 TAC4 · `unit` ReplyCleanerTest · `integration` ReplyRepositoryTest |

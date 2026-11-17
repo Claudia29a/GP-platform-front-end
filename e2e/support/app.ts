@@ -12,7 +12,7 @@ const BACKEND_DIR = process.env['E2E_BACKEND_DIR'] ?? '../GP-platform-back-end';
 /** Mailpit, the test mail server from docker-compose.yml: every email the platform sends lands here. */
 const MAILPIT_URL = process.env['E2E_MAILPIT_URL'] ?? 'http://localhost:8025';
 
-function sql(service: 'account-db' | 'intake-db', database: string, statement: string): void {
+function sql(service: 'account-db' | 'intake-db' | 'messaging-db', database: string, statement: string): void {
   execFileSync('docker', ['compose', 'exec', '-T', service, 'psql', '-U', database, '-d', database, '-qc', statement], {
     cwd: BACKEND_DIR,
     stdio: 'pipe',
@@ -20,7 +20,7 @@ function sql(service: 'account-db' | 'intake-db', database: string, statement: s
 }
 
 /** The rows exactly as they are in the database, which is what someone with a copy of it would see. */
-export function storedRows(service: 'account-db' | 'intake-db', database: string, statement: string): string[][] {
+export function storedRows(service: 'account-db' | 'intake-db' | 'messaging-db', database: string, statement: string): string[][] {
   const output = execFileSync(
     'docker',
     ['compose', 'exec', '-T', service, 'psql', '-U', database, '-d', database, '-AtF', '\t', '-c', statement],

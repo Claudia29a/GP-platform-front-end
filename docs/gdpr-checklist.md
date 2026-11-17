@@ -77,7 +77,7 @@ Health data is special category data (Article 9), the strictest kind. A question
 | Microsoft Azure | Hosting, database, logs | Everything above, in Sweden Central | 🟡 | Check that the data processing terms apply: this runs on a student subscription. |
 | Google | Sign-in | Name, email, and the visitor's IP address once they click Continue with Google | ✅ | The script loads only after the user chooses Google; the privacy page says so. A real practice records the transfer outside the EU (Art. 44 to 46). |
 | Email provider (to be chosen) | Sends the confirmation code | Email address and the code; never questions | 🟡 | Choose an EU-hosted provider and accept its data processing terms; the privacy page already names the service. |
-| Messaging Service | Stores the GP's replies (encrypted) and emails the patient that there is one | Reply text, GP's name; the patient's email only to send the notification | 🟡 | Replies are not yet deleted when the patient deletes their account or when the question reaches 6 months; see the work list. |
+| Messaging Service | Stores the GP's replies (encrypted) and emails the patient that there is one | Reply text, GP's name; the patient's email only to send the notification | ✅ | Replies are deleted with the patient's account and 6 months after their question was sent; My data shows and downloads them. |
 | GitHub | Code and images | No patient data; test reports use made-up data | ✅ | |
 
 ## Accountability
@@ -100,6 +100,5 @@ The next feature touches this checklist directly, so it starts with these rules:
 
 In order of importance. Each becomes a user story, with acceptance criteria and tests first.
 
-1. **Delete replies together with their question:** when a patient deletes their account and after 6 months (the Messaging Service does not do this yet).
-2. Changing the email address of an account.
-3. Narrowing the database firewall, once a paid virtual network is possible.
+1. Changing the email address of an account.
+2. Narrowing the database firewall, once a paid virtual network is possible.
