@@ -2,7 +2,7 @@
   <h1>Check your email</h1>
   <p class="lead">
     We sent a 6-digit code to <strong>{{ email() }}</strong>. Type it below to confirm the address is yours. The code
-    works for 15 minutes.
+    works for 15 minutes. An account that is not confirmed within 24 hours is deleted; you can then sign up again.
   </p>
 
   <form [formGroup]="form" (ngSubmit)="verify()" novalidate>

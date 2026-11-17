@@ -48,6 +48,9 @@ export function accountErrorMessage(error: unknown): string {
         ? 'Please wait a minute before asking for a new code.'
         : `You asked for many new codes. Please try again in ${minutes} minutes.`;
     }
+    if (url.endsWith('/accounts') && error.status === 422) {
+      return 'No email can be delivered to this address. Please check it for typos, for example gmial.com instead of gmail.com.';
+    }
     if (url.endsWith('/accounts') && error.status === 429) {
       return 'Too many accounts were created from this device. Please try again later.';
     }

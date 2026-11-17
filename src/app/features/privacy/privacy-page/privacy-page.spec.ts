@@ -45,6 +45,7 @@ describe('[component] PrivacyPage', () => {
 
     expect(page.textContent).toContain('My data');
     expect(page.textContent).toContain('which staff member opened your question');
+    expect(page.textContent).toContain('not confirmed within 24 hours are deleted');
   });
 
   it('names the email service that sends the confirmation code', async () => {
