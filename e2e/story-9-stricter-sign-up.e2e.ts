@@ -28,7 +28,7 @@ test.describe('[e2e] Story 9: stricter sign-up', () => {
 
     makeAccountOlder(email, 25);
 
-    // Locally the clean-up runs every 10 seconds (ACCOUNT_CLEANUP_INTERVAL in docker-compose.yml).
+    // Locally the clean-up runs every 2 seconds (ACCOUNT_CLEANUP_INTERVAL in docker-compose.yml).
     await expect
       .poll(async () => (await request.post('/api/account/login', { data: { email, password: PASSWORD } })).status(), { timeout: 30_000 })
       .toBe(401);
@@ -41,7 +41,8 @@ test.describe('[e2e] Story 9: stricter sign-up', () => {
     await createAccount(request, email);
 
     makeAccountOlder(email, 25);
-    await new Promise((resolve) => setTimeout(resolve, 15_000));
+    // Long enough for at least two clean-up runs.
+    await new Promise((resolve) => setTimeout(resolve, 5_000));
 
     expect((await request.post('/api/account/login', { data: { email, password: PASSWORD } })).status()).toBe(200);
   });
