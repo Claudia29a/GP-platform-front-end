@@ -2,13 +2,14 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 
 import { PATIENT } from '../../../testing/test-data';
 import { AccountApiService } from '../../core/auth/account-api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { GoogleIdentityService } from '../../core/auth/google-identity.service';
-import { SignIn } from './sign-in';
+import { WakeUpService } from '../../core/services/wake-up.service';
+import { STARTING_HINT_AFTER_MS, SignIn } from './sign-in';
 
 describe('[component] SignIn', () => {
   let fixture: ComponentFixture<SignIn>;
@@ -21,9 +22,12 @@ describe('[component] SignIn', () => {
   };
   let google: { renderButton: ReturnType<typeof vi.fn> };
   let accounts: { register: ReturnType<typeof vi.fn>; login: ReturnType<typeof vi.fn> };
+  let wakeUp: { wakeUp: ReturnType<typeof vi.fn> };
   let onGoogleSignIn: (token: string) => void;
 
-  async function render(options: { expired?: boolean; declined?: boolean; deleted?: boolean; googleFails?: boolean } = {}) {
+  async function render(
+    options: { expired?: boolean; declined?: boolean; deleted?: boolean; googleFails?: boolean; startingHintAfterMs?: number } = {},
+  ) {
     auth = {
       signIn: vi.fn().mockResolvedValue(PATIENT),
       sessionExpired: signal(options.expired ?? false),
@@ -36,6 +40,7 @@ describe('[component] SignIn', () => {
         return options.googleFails ? Promise.reject(new Error('offline')) : Promise.resolve();
       }),
     };
+    wakeUp = { wakeUp: vi.fn() };
     accounts = {
       register: vi.fn().mockReturnValue(of({})),
       login: vi.fn().mockReturnValue(of({ token: 'carebridge-token', tokenType: 'Bearer', expiresIn: 3600 })),
@@ -47,6 +52,8 @@ describe('[component] SignIn', () => {
         { provide: AuthService, useValue: auth },
         { provide: GoogleIdentityService, useValue: google },
         { provide: AccountApiService, useValue: accounts },
+        { provide: WakeUpService, useValue: wakeUp },
+        { provide: STARTING_HINT_AFTER_MS, useValue: options.startingHintAfterMs ?? 3000 },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(SignIn);
@@ -91,6 +98,50 @@ describe('[component] SignIn', () => {
     await render();
 
     expect(page.querySelector('.privacy a')?.getAttribute('href')).toBe('/privacy');
+  });
+
+  it('wakes the services as soon as the page opens, while the user is still typing', async () => {
+    await render();
+
+    expect(wakeUp.wakeUp).toHaveBeenCalled();
+  });
+
+  describe('while the services are starting', () => {
+    const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    async function signInSlowly(answer: Subject<{ token: string; tokenType: string; expiresIn: number }>) {
+      await render({ startingHintAfterMs: 20 });
+      accounts.login.mockReturnValue(answer);
+      await type('signin-email', 'bram@example.com');
+      await type('signin-password', 'Secret12');
+      page.querySelector<HTMLFormElement>('form')!.dispatchEvent(new Event('submit'));
+    }
+
+    it('explains the wait when signing in takes more than a few seconds', async () => {
+      await signInSlowly(new Subject());
+      fixture.detectChanges();
+      expect(page.querySelector('.starting')).toBeNull();
+
+      await pause(60);
+      fixture.detectChanges();
+
+      expect(page.querySelector('.starting')?.textContent).toContain('Starting up CareBridge');
+    });
+
+    it('removes the explanation once signing in is done', async () => {
+      const answer = new Subject<{ token: string; tokenType: string; expiresIn: number }>();
+      await signInSlowly(answer);
+      vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      await pause(60);
+
+      answer.next({ token: 'carebridge-token', tokenType: 'Bearer', expiresIn: 3600 });
+      answer.complete();
+      await pause(20);
+      fixture.detectChanges();
+
+      expect(auth.signIn).toHaveBeenCalledWith('carebridge-token');
+      expect(page.querySelector('.starting')).toBeNull();
+    });
   });
 
   describe('with Google', () => {

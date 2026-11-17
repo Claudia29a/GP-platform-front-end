@@ -91,6 +91,12 @@
     </form>
   }
 
+  @if (starting()) {
+    <p class="info starting" role="status">
+      Starting up CareBridge. After a quiet period this can take up to half a minute; you do not need to click again.
+    </p>
+  }
+
   @if (errorMessage(); as message) {
     <p #alert class="alert" role="alert">{{ message }}</p>
   }

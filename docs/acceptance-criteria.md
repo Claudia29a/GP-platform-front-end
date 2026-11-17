@@ -159,3 +159,24 @@ Test types were chosen with the story, before the code was written.
 | TAC2 DNS not answering allows the sign-up | `unit` MailDomainCheckerTest |
 | TAC3 the clean-up runs at start-up and every hour; confirmed accounts stay | `e2e` Story 9 TAC3 · `integration` AccountServiceIntegrationTest |
 | TAC4 test domains are only skipped when the setting lists them | `unit` MailDomainCheckerTest |
+
+## Story 10: faster start
+
+Test types were chosen with the story, before the code was written. Start-up time was measured before and after,
+locally with the same half CPU and 1 GB as on Azure (`Started … in … seconds`, three runs each):
+
+| Service | Before | Class data sharing | Plus the quick compiler only |
+| --- | --- | --- | --- |
+| Account Service | 19.0 s | 10.5 s | 5.6 s |
+| Intake Service | 17.2 s | 8.9 s | 4.3 s |
+
+A sign-in stays as fast with the quick compiler only (median 0.11 s in both cases). On Azure, before the change, the
+first sign-in right after starting took 26.8 s.
+
+| Criterion | Proof |
+| --- | --- |
+| AC1 the services start faster | `manual` measurement above, in the pipeline every image build makes the class archive |
+| AC2 opening the sign-in page wakes both services at once | `e2e` Story 10 AC2 · `unit` wake-up.service.spec · `component` sign-in.spec |
+| AC3 a long sign-in explains that CareBridge is starting | `component` sign-in.spec |
+| TAC1 the class archive is made in the image with made-up settings, without a database | every Docker build; a failing practice start fails the build |
+| TAC2 a service that cannot be woken shows no error; signing in shows the real message | `unit` wake-up.service.spec |
