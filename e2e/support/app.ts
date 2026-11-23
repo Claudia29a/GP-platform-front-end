@@ -53,6 +53,11 @@ function quoted(ids: string[]): string {
   return ids.map((id) => `'${id}'`).join(',');
 }
 
+/** The day of a time in the practice's time zone, as YYYY-MM-DD (User story nr 10). */
+export function practiceDay(start: string): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam' }).format(new Date(start));
+}
+
 /** Removes everything earlier test runs created; real accounts and questions are left alone. */
 export function cleanTestData(): void {
   const accounts = accountIdsWith((email) => email.startsWith('e2e-'));
@@ -65,6 +70,8 @@ export function cleanTestData(): void {
     .map(([id]) => id);
   if (questions.length) {
     sql('intake-db', 'intake', `delete from intake where id in (${quoted(questions)})`);
+    // Their replies, and with them any booked appointments (User story nr 10), so free times are not used up.
+    sql('messaging-db', 'messaging', `delete from reply where intake_id in (${quoted(questions)})`);
   }
   // Earlier runs' sign-ups would count against the sign-up limit.
   sql('account-db', 'account', 'delete from sign_up');

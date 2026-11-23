@@ -9,6 +9,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { Intake } from '../../../core/models/intake.model';
 import { CurrentUser, isStaff } from '../../../core/models/user.model';
 import { IntakeService } from '../../../core/services/intake.service';
+import { AppointmentService } from '../../../core/services/appointment.service';
 import { ReplyService } from '../../../core/services/reply.service';
 import { IntakeDetail } from './intake-detail';
 
@@ -17,6 +18,7 @@ describe('[component] IntakeDetail', () => {
   let getById: ReturnType<typeof vi.fn>;
   let getAccessLog: ReturnType<typeof vi.fn>;
   let replies: { getReplies: ReturnType<typeof vi.fn>; reply: ReturnType<typeof vi.fn> };
+  let appointments: { cancel: ReturnType<typeof vi.fn> };
 
   async function render(user: CurrentUser, result: Intake | HttpErrorResponse) {
     getById = vi.fn().mockReturnValue(result instanceof HttpErrorResponse ? throwError(() => result) : of(result));
@@ -32,6 +34,7 @@ describe('[component] IntakeDetail', () => {
         provideRouter([]),
         { provide: IntakeService, useValue: { getById, getAccessLog } },
         { provide: ReplyService, useValue: replies },
+        { provide: AppointmentService, useValue: (appointments = { cancel: vi.fn().mockReturnValue(of(undefined)) }) },
         { provide: AuthService, useValue: { user: current, isStaff: computed(() => isStaff(current())) } },
       ],
     }).compileComponents();
@@ -245,6 +248,48 @@ describe('[component] IntakeDetail', () => {
       expect(second.querySelector('.appointment a')?.textContent).toContain('Make an appointment');
     });
 
+    const invitation = {
+      id: 'reply-2',
+      questionId: 'question-1',
+      authorName: 'Dr. Jansen',
+      text: 'Please come in.',
+      createdAt: '2026-11-18T10:00:00Z',
+      appointment: true,
+      appointmentUrl: 'https://carebridge.test/appointment?reply=reply-2',
+    };
+    const booked = { id: 'appointment-1', questionId: 'question-1', start: '2026-12-01T09:15:00Z', day: 'Tuesday 1 December 2026', time: '10:15', patientName: 'Anna' };
+
+    it('User story nr 10 AC2 AC4: the patient sees the booked time instead of the button, and can cancel it', async () => {
+      const getReplies = vi.fn().mockReturnValue(of([{ ...invitation, booked }]));
+      const page = await render2(PATIENT, getReplies);
+      const appointment = page.querySelector('.appointment')!;
+
+      expect(appointment.textContent).toContain('Your appointment: Tuesday 1 December 2026 at 10:15');
+      expect(appointment.querySelector('a')).toBeNull();
+
+      getReplies.mockReturnValue(of([invitation]));
+      appointment.querySelector<HTMLButtonElement>('button.cancel')!.click();
+      await fixture.whenStable();
+
+      expect(appointments.cancel).toHaveBeenCalledWith('appointment-1');
+      expect(page.querySelector('[role=status]')?.textContent).toContain('Your appointment has been cancelled.');
+      expect(page.querySelector('.appointment a')?.textContent).toContain('Make an appointment');
+    });
+
+    it('User story nr 10 AC6: staff see the booked time, without a cancel button', async () => {
+      const page = await render2(ASSISTANT, vi.fn().mockReturnValue(of([{ ...invitation, booked }])));
+
+      expect(page.querySelector('.appointment')?.textContent).toContain('Appointment: Tuesday 1 December 2026 at 10:15');
+      expect(page.querySelector('.appointment button')).toBeNull();
+    });
+
+    it('User story nr 10 AC6: staff see when the patient has not booked yet, without a booking button', async () => {
+      const page = await render2(GP, vi.fn().mockReturnValue(of([invitation])));
+
+      expect(page.querySelector('.appointment')?.textContent).toContain('The patient has not made the appointment yet.');
+      expect(page.querySelector('.appointment a')).toBeNull();
+    });
+
     async function renderWithReplies(user: CurrentUser): Promise<HTMLElement> {
       const page = await render(user, testIntake());
       replies.getReplies.mockReturnValue(
@@ -265,6 +310,8 @@ describe('[component] IntakeDetail', () => {
           provideRouter([]),
           { provide: IntakeService, useValue: { getById, getAccessLog } },
           { provide: ReplyService, useValue: replies },
+          { provide: AppointmentService, useValue: (appointments = { cancel: vi.fn().mockReturnValue(of(undefined)) }) },
+        { provide: AppointmentService, useValue: (appointments = { cancel: vi.fn().mockReturnValue(of(undefined)) }) },
           { provide: AuthService, useValue: { user: current, isStaff: computed(() => isStaff(current())) } },
         ],
       }).compileComponents();

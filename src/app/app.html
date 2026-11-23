@@ -7,6 +7,7 @@
         @if (auth.isStaff()) {
           <a routerLink="/queue" routerLinkActive="active">Queue</a>
           <a routerLink="/questions" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">All questions</a>
+          <a routerLink="/appointments" routerLinkActive="active">Appointments</a>
         } @else {
           <a routerLink="/ask" routerLinkActive="active">Ask a question</a>
           <a routerLink="/questions" routerLinkActive="active">My questions</a>

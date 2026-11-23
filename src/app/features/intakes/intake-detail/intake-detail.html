@@ -154,17 +154,38 @@
       <article class="reply">
         <p class="reply-meta">{{ reply.authorName }}, {{ reply.createdAt | date: 'd MMMM y, HH:mm' }}</p>
         <p class="reply-text">{{ reply.text }}</p>
-        @if (reply.appointment && reply.appointmentUrl) {
-          <p class="appointment">
-            The practice asks you to make an appointment.
-            <a class="button" [href]="reply.appointmentUrl">Make an appointment</a>
-          </p>
+        <!-- User story nr 9 and 10: the invitation, and the appointment once it is booked. -->
+        @if (reply.appointment) {
+          <div class="appointment">
+            @if (reply.booked; as booked) {
+              @if (isStaff()) {
+                <p>Appointment: {{ booked.day }} at {{ booked.time }}</p>
+              } @else {
+                <p>Your appointment: {{ booked.day }} at {{ booked.time }}</p>
+                <button type="button" class="button secondary cancel" (click)="cancelAppointment(booked.id)" [disabled]="cancelling()">
+                  {{ cancelling() ? 'Cancelling…' : 'Cancel appointment' }}
+                </button>
+              }
+            } @else if (isStaff()) {
+              <p>The practice asked the patient to make an appointment. The patient has not made the appointment yet.</p>
+            } @else if (reply.appointmentUrl) {
+              <p>The practice asks you to make an appointment.</p>
+              <a class="button" [href]="reply.appointmentUrl">Make an appointment</a>
+            }
+          </div>
         }
       </article>
     } @empty {
       <p class="none">No reply yet.</p>
     }
   </div>
+
+  @if (appointmentMessage(); as message) {
+    <p class="info" role="status">{{ message }}</p>
+  }
+  @if (appointmentFailure(); as message) {
+    <p class="alert" role="alert">{{ message }}</p>
+  }
 
   @if (canReply()) {
     <form class="reply-form" (submit)="$event.preventDefault(); sendReply()" novalidate>

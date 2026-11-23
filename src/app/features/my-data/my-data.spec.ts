@@ -65,6 +65,13 @@ describe('[component] MyDataPage', () => {
     expect(page.querySelector('.my-reply')?.textContent).toContain('The practice asked you to make an appointment.');
   });
 
+  it('User story nr 10 AC8: shows the booked appointment', async () => {
+    const booked = { id: 'a1', questionId: 'question-1', start: '2026-12-01T09:15:00Z', day: 'Tuesday 1 December 2026', time: '10:15', patientName: 'Anna' };
+    await render({ ...data, replies: [{ ...data.replies[0], appointment: true, booked }] });
+
+    expect(page.querySelector('.my-reply')?.textContent).toContain('Your appointment: Tuesday 1 December 2026 at 10:15');
+  });
+
   it('explains when the data cannot be loaded', async () => {
     await render(new HttpErrorResponse({ status: 0 }));
 

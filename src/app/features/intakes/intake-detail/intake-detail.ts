@@ -12,6 +12,7 @@ import { ROLE_LABELS } from '../../../core/models/user.model';
 import { httpErrorMessage } from '../../../core/services/http-error-message';
 import { IntakeService } from '../../../core/services/intake.service';
 import { MAX_REPLY_LENGTH, Reply } from '../../../core/models/reply.model';
+import { AppointmentService } from '../../../core/services/appointment.service';
 import { ReplyService } from '../../../core/services/reply.service';
 
 @Component({
@@ -65,7 +66,7 @@ export class IntakeDetail implements OnInit {
       .subscribe({
         next: (intake) => {
           this.intake.set(intake);
-          this.replyService.getReplies(this.id()).subscribe({ next: (replies) => this.replies.set(replies), error: () => this.replies.set([]) });
+          this.loadReplies();
           // Loaded after the question, so this opening is already in the log.
           if (this.auth.user()?.role === 'GP') {
             this.intakeService.getAccessLog(this.id()).subscribe({ next: (log) => this.accessLog.set(log), error: () => this.accessLog.set(null) });
@@ -73,6 +74,32 @@ export class IntakeDetail implements OnInit {
         },
         error: (error) => this.errorMessage.set(httpErrorMessage(error)),
       });
+  }
+
+  private readonly appointments = inject(AppointmentService);
+  protected readonly cancelling = signal(false);
+  protected readonly appointmentMessage = signal<string | null>(null);
+  protected readonly appointmentFailure = signal<string | null>(null);
+
+  /** User story nr 10 AC4: the patient cancels; the time is free again and the booking button comes back. */
+  protected cancelAppointment(id: string): void {
+    this.cancelling.set(true);
+    this.appointmentMessage.set(null);
+    this.appointmentFailure.set(null);
+    this.appointments
+      .cancel(id)
+      .pipe(finalize(() => this.cancelling.set(false)))
+      .subscribe({
+        next: () => {
+          this.appointmentMessage.set('Your appointment has been cancelled. You can choose a new time.');
+          this.loadReplies();
+        },
+        error: (error) => this.appointmentFailure.set(httpErrorMessage(error)),
+      });
+  }
+
+  private loadReplies(): void {
+    this.replyService.getReplies(this.id()).subscribe({ next: (replies) => this.replies.set(replies), error: () => this.replies.set([]) });
   }
 
   protected sendReply(): void {

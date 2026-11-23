@@ -71,6 +71,9 @@
             @if (reply.appointment) {
               <span class="my-appointment">The practice asked you to make an appointment.</span>
             }
+            @if (reply.booked; as booked) {
+              <span class="my-appointment">Your appointment: {{ booked.day }} at {{ booked.time }}</span>
+            }
           </p>
         }
         <ul class="opened-by">

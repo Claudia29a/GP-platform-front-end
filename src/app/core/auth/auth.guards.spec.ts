@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot, UrlTree, provideRouter } from '@angular/router';
 
 import { CurrentUser, Role } from '../models/user.model';
-import { homeGuard, roleGuard, signedInGuard, verifyEmailGuard } from './auth.guards';
+import { homeGuard, returnUrl, roleGuard, signedInGuard, verifyEmailGuard } from './auth.guards';
 import { AuthService } from './auth.service';
 
 describe('[unit] auth guards', () => {
@@ -20,12 +20,27 @@ describe('[unit] auth guards', () => {
     user.set({ id: 'id', name: 'Name', email: 'name@example.com', role, emailVerified, privacyConsentNeeded: false });
   }
 
-  function run(guard: CanActivateFn): boolean | string {
+  function run(guard: CanActivateFn, url?: string): boolean | string {
     const result = TestBed.runInInjectionContext(() =>
-      guard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot),
+      guard({} as ActivatedRouteSnapshot, { url } as RouterStateSnapshot),
     ) as boolean | UrlTree;
     return result instanceof UrlTree ? TestBed.inject(Router).serializeUrl(result) : result;
   }
+
+  it('User story nr 10: remembers the page a visitor wanted, such as the booking link from an email', () => {
+    expect(run(signedInGuard, '/questions/q1')).toBe('/sign-in?returnUrl=%2Fquestions%2Fq1');
+    expect(run(roleGuard('PATIENT'), '/appointment?reply=r1')).toBe('/sign-in?returnUrl=%2Fappointment%3Freply%3Dr1');
+  });
+
+  it('User story nr 10: only goes back to a page of CareBridge itself after signing in', () => {
+    expect(returnUrl('/appointment?reply=r1')).toBe('/appointment?reply=r1');
+    expect(returnUrl(null)).toBeNull();
+    expect(returnUrl('/')).toBeNull();
+    expect(returnUrl('https://evil.example')).toBeNull();
+    expect(returnUrl('//evil.example')).toBeNull();
+    expect(returnUrl('/\\evil.example')).toBeNull();
+    expect(returnUrl('/sign-in')).toBeNull();
+  });
 
   it('sends visitors who are not signed in to the sign-in page', () => {
     expect(run(signedInGuard)).toBe('/sign-in');

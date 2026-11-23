@@ -1,10 +1,11 @@
 import { Component, ElementRef, InjectionToken, Injector, afterNextRender, effect, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { AccountApiService, accountErrorMessage } from '../../core/auth/account-api.service';
+import { returnUrl } from '../../core/auth/auth.guards';
 import { AuthService } from '../../core/auth/auth.service';
 import { GoogleIdentityService } from '../../core/auth/google-identity.service';
 import { MAX_PASSWORD_LENGTH, PASSWORD_RULES, passwordRulesValidator } from '../../core/auth/password-rules';
@@ -33,6 +34,7 @@ export class SignIn {
   private readonly google = inject(GoogleIdentityService);
   private readonly accounts = inject(AccountApiService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly wakeUpService = inject(WakeUpService);
   private readonly startingHintAfterMs = inject(STARTING_HINT_AFTER_MS);
@@ -139,7 +141,9 @@ export class SignIn {
     const hint = setTimeout(() => this.starting.set(true), this.startingHintAfterMs);
     try {
       await this.auth.signIn(await token);
-      await this.router.navigate(['/']);
+      // User story nr 10: back to the page the user came for, such as the booking link from an email.
+      const back = returnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
+      await (back ? this.router.navigateByUrl(back) : this.router.navigate(['/']));
     } catch (error) {
       this.errorMessage.set(accountErrorMessage(error));
     } finally {
