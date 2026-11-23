@@ -154,6 +154,12 @@
       <article class="reply">
         <p class="reply-meta">{{ reply.authorName }}, {{ reply.createdAt | date: 'd MMMM y, HH:mm' }}</p>
         <p class="reply-text">{{ reply.text }}</p>
+        @if (reply.appointment && reply.appointmentUrl) {
+          <p class="appointment">
+            The practice asks you to make an appointment.
+            <a class="button" [href]="reply.appointmentUrl">Make an appointment</a>
+          </p>
+        }
       </article>
     } @empty {
       <p class="none">No reply yet.</p>
@@ -168,7 +174,14 @@
       @if (replyError(); as message) {
         <p id="reply-error" class="error reply-error">{{ message }}</p>
       }
-      <p class="hint">The patient gets an email that there is a reply. The email never contains the reply itself.</p>
+      <label class="invite" for="reply-appointment">
+        <input id="reply-appointment" type="checkbox" [formControl]="inviteToAppointment" />
+        Invite the patient to make an appointment
+      </label>
+      <p class="hint">
+        The patient gets an email that there is a reply, with a link to the practice's booking page if you invite them.
+        The email never contains the reply itself.
+      </p>
       <button type="submit" class="button" [disabled]="sending()">{{ sending() ? 'Sending…' : 'Send reply' }}</button>
     </form>
     @if (replyMessage(); as message) {

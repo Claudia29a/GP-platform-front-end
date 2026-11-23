@@ -233,3 +233,22 @@ medically alarming, the urgency comes from the existing score.
 | TAC2 the folded part is the browser's own details element, so keyboard and screen readers work | `e2e` User story 8 AC2 AC3 · `component` intake-detail.spec |
 | TAC3 the summary uses the existing answer labels | `unit` queue.model.spec · `component` queue-list.spec |
 | TAC4 opening the page is still logged once | `unit` IntakeServiceTest · `e2e` Story 8 AC4 AC5 AC6 (the older "my data and the access log" story); the page only changed its layout |
+
+## User story nr 9: the appointment link in the doctor's email
+
+Risk class B (BDTM): damage medium, because a patient who needs care could miss the invitation or get a wrong link;
+chance medium. Letting the GP type a link would make the damage high, so the link comes from the settings
+(`APPOINTMENT_URL`) and the GP only ticks a box. Without a practice booking system, the link goes to CareBridge's
+own simple appointment page.
+
+| Criterion | Proof |
+| --- | --- |
+| AC1 the GP can tick "Invite the patient to make an appointment"; it is off at first | `e2e` User story nr 9 AC1 AC2 AC4 · `component` intake-detail.spec |
+| AC2 with the tick, the email links to the booking page, still without health details | `e2e` User story nr 9 AC1 AC2 AC4 · `unit` ReplyNotifierTest |
+| AC3 without the tick, the email is as before | `e2e` User story nr 9 AC3 · `unit` ReplyNotifierTest |
+| AC4 the patient sees the invitation with a button to the booking page under that reply | `e2e` User story nr 9 AC1 AC2 AC4 · `component` intake-detail.spec, appointment-page.spec |
+| AC5 only the GP can send an invitation | `e2e` User story nr 9 AC5 TAC3 · `api` ReplyControllerTest |
+| TAC1 the invitation is stored encrypted with the reply; My data shows it | `integration` ReplyRepositoryTest · `unit` ReplyServiceTest · `api` MyRepliesControllerTest · `component` my-data.spec · `e2e` User story nr 9 TAC1 |
+| TAC2 the booking link is a setting; only https (http only for localhost), otherwise no start | `unit` AppointmentLinkTest |
+| TAC3 a link sent with the reply is ignored | `api` ReplyControllerTest · `e2e` User story nr 9 AC5 TAC3 · `unit` reply.service.spec |
+| TAC4 a failed email keeps the reply and the invitation | `unit` ReplyServiceTest, ReplyNotifierTest |

@@ -66,7 +66,12 @@
         </p>
         <p class="description">{{ item.question.description }}</p>
         @for (reply of repliesTo(item.question.id); track reply.id) {
-          <p class="my-reply"><strong>Reply from {{ reply.authorName }}</strong>, {{ reply.createdAt | date: 'd MMMM y' }}: {{ reply.text }}</p>
+          <p class="my-reply">
+            <strong>Reply from {{ reply.authorName }}</strong>, {{ reply.createdAt | date: 'd MMMM y' }}: {{ reply.text }}
+            @if (reply.appointment) {
+              <span class="my-appointment">The practice asked you to make an appointment.</span>
+            }
+          </p>
         }
         <ul class="opened-by">
           @for (entry of item.openedBy; track $index) {

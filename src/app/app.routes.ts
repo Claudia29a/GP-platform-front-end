@@ -52,5 +52,12 @@ export const routes: Routes = [
     title: 'Privacy · CareBridge',
     loadComponent: () => import('./features/privacy/privacy-page/privacy-page').then((m) => m.PrivacyPage),
   },
+  {
+    // User story nr 9: where the "Make an appointment" link goes when no practice booking system is set. Public,
+    // because it holds no personal data.
+    path: 'appointment',
+    title: 'Make an appointment · CareBridge',
+    loadComponent: () => import('./features/appointment/appointment-page').then((m) => m.AppointmentPage),
+  },
   { path: '**', redirectTo: '' },
 ];
