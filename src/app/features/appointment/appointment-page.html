@@ -1,15 +1,62 @@
 <section class="card">
   <h1>Make an appointment</h1>
 
-  <p>Your GP would like to see you about your question.</p>
-  <p>
-    To choose a time, call your GP practice. Please mention that you asked your question in
-    CareBridge.
-  </p>
+  @if (!reply()) {
+    <p>
+      You can make an appointment once your GP has invited you. The invitation comes with the GP's
+      reply to your question.
+    </p>
+  } @else {
+    <p>Your GP would like to see you about your question. Choose a free time and confirm it.</p>
+
+    @if (errorMessage(); as message) {
+      <p class="alert" role="alert">{{ message }}</p>
+    }
+
+    @if (slots(); as slots) {
+      @if (slots.length === 0) {
+        <p class="none">
+          There are no free times in the next two weeks. Please call your GP practice.
+        </p>
+      } @else {
+        <form (submit)="$event.preventDefault(); book()" novalidate>
+          @for (day of days(); track day.day) {
+            <fieldset class="day">
+              <legend>
+                <h2>{{ day.day }}</h2>
+              </legend>
+              <div class="times">
+                @for (slot of day.slots; track slot.start) {
+                  <span class="time">
+                    <input
+                      type="radio"
+                      name="slot"
+                      [id]="'slot-' + slot.start"
+                      [checked]="chosen() === slot.start"
+                      (change)="chosen.set(slot.start)"
+                    />
+                    <label [for]="'slot-' + slot.start">{{ slot.time }}</label>
+                  </span>
+                }
+              </div>
+            </fieldset>
+          }
+          <!-- Stays in view while the patient scrolls through the days. -->
+          <div class="actions">
+            <span class="chosen" aria-live="polite">{{ chosenLabel() }}</span>
+            <button type="submit" class="button" [disabled]="busy()">
+              {{ busy() ? 'Booking…' : 'Confirm appointment' }}
+            </button>
+          </div>
+        </form>
+      }
+    } @else {
+      <p>Loading free times…</p>
+    }
+  }
 
   <p class="notice">
-    <strong>CareBridge is a student project.</strong> A real practice links its own booking system
-    here, so patients can choose a time online.
+    <strong>CareBridge is a student project.</strong> No real appointment is made at a GP practice.
   </p>
 
   <a routerLink="/" class="back">← Back to CareBridge</a>

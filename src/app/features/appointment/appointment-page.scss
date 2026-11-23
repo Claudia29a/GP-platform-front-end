@@ -3,4 +3,84 @@
   border-left: 4px solid var(--navy);
   padding: 0.75rem 1rem;
   border-radius: var(--radius);
+  margin-top: 1.5rem;
+}
+
+.day {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 0;
+  padding: 0.75rem 0;
+
+  legend {
+    padding: 0;
+  }
+
+  h2 {
+    font-size: 1rem;
+    color: var(--navy);
+    margin: 0 0 0.5rem;
+  }
+}
+
+.times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+/* Each time is a radio button that looks like a small chip; the keyboard still moves between them. */
+.time {
+  position: relative;
+
+  /* Hidden but still reachable with the keyboard; the label takes the click. */
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+  }
+
+  label {
+    display: inline-block;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    font-variant-numeric: tabular-nums;
+  }
+
+  input:checked + label {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: var(--on-navy);
+  }
+
+  input:focus-visible + label {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+.actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-top: 1rem;
+  padding: 0.75rem 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.chosen {
+  font-weight: 600;
+}
+
+.none {
+  color: var(--muted);
 }
