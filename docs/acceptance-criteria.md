@@ -252,3 +252,29 @@ own simple appointment page.
 | TAC2 the booking link is a setting; only https (http only for localhost), otherwise no start | `unit` AppointmentLinkTest |
 | TAC3 a link sent with the reply is ignored | `api` ReplyControllerTest · `e2e` User story nr 9 AC5 TAC3 · `unit` reply.service.spec |
 | TAC4 a failed email keeps the reply and the invitation | `unit` ReplyServiceTest, ReplyNotifierTest |
+
+## User story nr 10: book an appointment
+
+Risk class A (BDTM): damage high, because a double booking or a patient who wrongly thinks they have an appointment
+could delay care; chance high, because of new logic, time zones and two patients booking at the same moment. The
+appointments live in the Messaging Service, which already keeps the invitation. The opening hours are settings.
+
+| Criterion | Proof |
+| --- | --- |
+| AC1 the button opens the free times of the next 14 days, from tomorrow, by day | `e2e` User story nr 10 AC1 AC2 AC5 · `component` appointment-page.spec · `unit` SlotCalendarTest |
+| AC2 the patient picks and confirms a time and sees it on the question | `e2e` User story nr 10 AC1 AC2 AC5 · `component` appointment-page.spec, intake-detail.spec · `api` AppointmentControllerTest |
+| AC3 a taken time is not offered; of two patients picking the same time only one gets it, with a clear message | `e2e` User story nr 10 AC3 · `integration` AppointmentConcurrencyIntegrationTest, AppointmentRepositoryTest · `unit` AppointmentServiceTest · `component` appointment-page.spec |
+| AC4 the patient cancels until it starts; the time is free again | `e2e` User story nr 10 AC4 AC5 · `component` intake-detail.spec · `api` AppointmentControllerTest · `unit` AppointmentServiceTest |
+| AC5 emails confirm the booking and the cancellation, without health details | `e2e` User story nr 10 AC1 AC2 AC5, AC4 AC5 · `unit` ReplyNotifierTest |
+| AC6 staff see the time on the question and a list per day | `e2e` User story nr 10 AC6 · `component` intake-detail.spec, appointments-list.spec · `api` AppointmentControllerTest |
+| AC7 only the invited patient books, once per invitation, never staff | `e2e` User story nr 10 AC7 · `api` AppointmentControllerTest · `unit` AppointmentServiceTest |
+| AC8 My data shows the appointment; deleting the account or the 6-month clean-up deletes it | `e2e` User story nr 10 AC8 · `integration` AppointmentRepositoryTest · `component` my-data.spec |
+| TAC1 opening hours, slot length, window and time zone are settings; times stored in UTC, summer time correct | `unit` SlotCalendarTest |
+| TAC2 free times are calculated on the server; other times give 400 | `unit` SlotCalendarTest, AppointmentServiceTest |
+| TAC3 the database never allows the same time twice; the loser gets 409 | `integration` AppointmentRepositoryTest, AppointmentConcurrencyIntegrationTest |
+| TAC4 stored in the Messaging Service (V4), linked to the invitation; name encrypted, account ID hashed | `integration` AppointmentRepositoryTest · `unit` AppointmentServiceTest |
+| TAC5 who may call which endpoint | `api` AppointmentControllerTest · `unit` appointment.service.spec |
+| TAC6 a failed email keeps the booking or cancellation | `unit` ReplyNotifierTest, AppointmentServiceTest |
+
+Also: after signing in, a link from an email (such as the booking link) now opens the page it pointed to, and only
+pages of CareBridge itself (`unit` auth.guards.spec · `e2e` User story nr 10 AC1 AC2 AC5).

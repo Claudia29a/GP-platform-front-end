@@ -53,7 +53,7 @@ test.describe("[e2e] User story nr 9: the appointment link in the doctor's email
 
     const mail = await mailTo(request, email, 'Your GP practice has replied');
     expect(mail.Text).toContain(`/questions/${id}`);
-    expect(mail.Text).toMatch(/Make an appointment: \S+\/appointment/);
+    expect(mail.Text).toMatch(/Make an appointment: \S+\/appointment\?reply=/);
     expect(mail.Text).not.toContain('come and see me');
     expect(mail.Text).not.toContain('needs an appointment');
 
@@ -117,7 +117,7 @@ test.describe("[e2e] User story nr 9: the appointment link in the doctor's email
     expect(sent.status()).toBe(201);
     const body = await sent.json();
     expect(body.appointment).toBe(true);
-    expect(body.appointmentUrl).toMatch(/\/appointment$/);
+    expect(body.appointmentUrl).toMatch(/\/appointment\?reply=/);
     expect(body.appointmentUrl).not.toContain('evil');
   });
 
@@ -144,8 +144,8 @@ test.describe("[e2e] User story nr 9: the appointment link in the doctor's email
     );
   });
 
-  test('User story nr 9: the appointment page opens without signing in', async ({ page }) => {
+  test('User story nr 9 and 10: the appointment page asks to sign in first', async ({ page }) => {
     await page.goto('/appointment');
-    await expect(page.getByRole('heading', { name: 'Make an appointment' })).toBeVisible();
+    await expect(page).toHaveURL(/\/sign-in\?returnUrl=%2Fappointment/);
   });
 });
