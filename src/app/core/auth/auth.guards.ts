@@ -1,15 +1,30 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn, Router, UrlTree } from '@angular/router';
 
 import { Role } from '../models/user.model';
 import { AuthService } from './auth.service';
 
+/**
+ * User story nr 10: the page to go back to after signing in, such as the booking link from an email. Only a page of
+ * CareBridge itself, so a link can never send someone to another site.
+ */
+export function returnUrl(url: string | null | undefined): string | null {
+  const safe = !!url && url.startsWith('/') && !url.startsWith('//') && !url.startsWith('/\\') && url !== '/' && !url.startsWith('/sign-in');
+  return safe ? url : null;
+}
+
+/** Sign-in first, remembering the page the visitor wanted. */
+function toSignIn(router: Router, url: string | undefined): UrlTree {
+  const back = returnUrl(url);
+  return router.createUrlTree(['/sign-in'], back ? { queryParams: { returnUrl: back } } : {});
+}
+
 /** Pages that need a signed-in user whose email address is confirmed. */
-export const signedInGuard: CanActivateFn = () => {
+export const signedInGuard: CanActivateFn = (_route, state) => {
   const user = inject(AuthService).user();
   const router = inject(Router);
   if (!user) {
-    return router.createUrlTree(['/sign-in']);
+    return toSignIn(router, state?.url);
   }
   return user.emailVerified || router.createUrlTree(['/verify-email']);
 };
@@ -30,11 +45,11 @@ export const signedOutGuard: CanActivateFn = () =>
 
 /** Pages for some roles only; others go to their own start page. The back-end checks the same rules. */
 export function roleGuard(...roles: Role[]): CanActivateFn {
-  return () => {
+  return (_route, state) => {
     const user = inject(AuthService).user();
     const router = inject(Router);
     if (!user) {
-      return router.createUrlTree(['/sign-in']);
+      return toSignIn(router, state?.url);
     }
     if (!user.emailVerified) {
       return router.createUrlTree(['/verify-email']);
