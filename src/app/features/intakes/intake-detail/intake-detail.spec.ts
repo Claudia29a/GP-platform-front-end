@@ -96,6 +96,58 @@ describe('[component] IntakeDetail', () => {
     expect(assistantPage.querySelector('.access-log')).toBeNull();
   });
 
+  describe('User story 8: the GP view', () => {
+    const order = (page: HTMLElement, ...selectors: string[]) =>
+      selectors.map((selector) => page.querySelector(selector)!).every((el, i, all) =>
+        i === 0 || Boolean(all[i - 1].compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING),
+      );
+
+    it('AC2: staff see a summary in the fixed pattern at the top, then the question and the reply box', async () => {
+      const page = await render(GP, testIntake());
+      const summary = page.querySelector('.summary')!;
+      const parts = Array.from(summary.querySelectorAll('[data-pattern]'), (el) => el.getAttribute('data-pattern'));
+
+      expect(parts).toEqual(['patient', 'waiting', 'where', 'how-long', 'bothers', 'symptoms']);
+      expect(summary.textContent).toContain('Anna de Vries');
+      expect(summary.textContent).toContain('Skin');
+      expect(summary.textContent).toContain('1–4 weeks');
+      expect(summary.querySelector('[data-pattern=bothers]')?.textContent).toBe('4/10');
+      expect(Array.from(summary.querySelectorAll('.tag'), (el) => el.textContent?.trim())).toEqual(['Swelling', 'Rash or itching']);
+      expect(summary.querySelector('[data-pattern=waiting]')?.textContent).toMatch(/^\d+ days?$/);
+      expect(order(page, '.summary', '.description', '.reply-form', '.full-details')).toBe(true);
+    });
+
+    it('AC3: the other details are folded under "Full details", closed at first', async () => {
+      const page = await render(GP, testIntake({ symptomsOther: 'Ringing in my ears', triedTreatment: true, treatmentTried: 'Cold pack' }));
+      const details = page.querySelector<HTMLDetailsElement>('details.full-details')!;
+
+      expect(details.open).toBe(false);
+      expect(details.querySelector('summary')?.textContent).toContain('Full details');
+      for (const text of ['anna@example.com', 'Yes: Antihistamine', 'Yes: Cold pack', 'Ringing in my ears', '2026', 'Sam Bakker']) {
+        expect(details.textContent).toContain(text);
+      }
+      expect(page.querySelector('.summary')?.textContent).not.toContain('anna@example.com');
+    });
+
+    it('AC4: nothing is lost; staff can still reach every answer', async () => {
+      const intake = testIntake({ symptomsOther: 'Ringing in my ears', triedTreatment: true, treatmentTried: 'Cold pack' });
+      const text = (await render(ASSISTANT, intake)).textContent!;
+
+      for (const answer of ['Anna de Vries', 'anna@example.com', 'Skin', '1–4 weeks', '4/10', 'Swelling', 'Rash or itching',
+        'Ringing in my ears', 'Antihistamine', 'Cold pack', 'Itchy rash on my left arm', 'In review']) {
+        expect(text).toContain(answer);
+      }
+    });
+
+    it('AC5: the patient keeps the page as it was, without summary or folded part', async () => {
+      const page = await render(PATIENT, testIntake());
+
+      expect(page.querySelector('.summary')).toBeNull();
+      expect(page.querySelector('details')).toBeNull();
+      expect(page.querySelector('h1')?.textContent).toBe('Question');
+    });
+  });
+
   describe('replies', () => {
     async function write(page: HTMLElement, text: string): Promise<void> {
       const box = page.querySelector<HTMLTextAreaElement>('#reply-text')!;

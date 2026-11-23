@@ -27,7 +27,6 @@ h2 {
   margin: 0 0 0.85rem;
 }
 
-.email,
 .none {
   color: var(--muted);
 }
@@ -127,4 +126,30 @@ h2 {
   border-left: 4px solid var(--navy);
   padding: 0.75rem 1rem;
   border-radius: var(--radius);
+}
+
+/* User story 8: the summary stands out at the top; the rest is folded. */
+.summary {
+  background: var(--primary-tint);
+  border: 1px solid var(--primary-soft);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+}
+
+.full-details {
+  border-top: 1px solid var(--border);
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+
+  > summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 0.85rem;
+  }
+
+  h2 {
+    border-top: 0;
+    padding-top: 0;
+  }
 }

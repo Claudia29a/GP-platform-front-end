@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -7,6 +7,7 @@ import { finalize } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Intake, STATUS_LABELS, areaLabel, durationLabel, symptomLabels } from '../../../core/models/intake.model';
 import { AccessLogEntry } from '../../../core/models/my-data.model';
+import { waitingTime } from '../../../core/models/queue.model';
 import { ROLE_LABELS } from '../../../core/models/user.model';
 import { httpErrorMessage } from '../../../core/services/http-error-message';
 import { IntakeService } from '../../../core/services/intake.service';
@@ -15,7 +16,7 @@ import { ReplyService } from '../../../core/services/reply.service';
 
 @Component({
   selector: 'app-intake-detail',
-  imports: [DatePipe, RouterLink, ReactiveFormsModule],
+  imports: [DatePipe, NgTemplateOutlet, RouterLink, ReactiveFormsModule],
   templateUrl: './intake-detail.html',
   styleUrl: './intake-detail.scss',
 })
@@ -30,6 +31,9 @@ export class IntakeDetail implements OnInit {
   protected readonly statusLabels = STATUS_LABELS;
   protected readonly durationLabel = durationLabel;
   protected readonly symptomLabels = symptomLabels;
+  protected readonly waitingTime = waitingTime;
+  /** The waiting time in the summary is counted from when the page opened. */
+  protected readonly now = new Date();
 
   /** Bound from the :id route parameter. */
   readonly id = input.required<string>();
