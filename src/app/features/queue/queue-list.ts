@@ -6,8 +6,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { finalize, interval } from 'rxjs';
 
-import { areaLabel } from '../../core/models/intake.model';
-import { QueueItem, scoreLevel } from '../../core/models/queue.model';
+import { areaLabel, durationLabel, symptomLabels } from '../../core/models/intake.model';
+import { QueueItem, firstLine, scoreLevel, urgencyLabel, waitingLabel } from '../../core/models/queue.model';
 import { httpErrorMessage } from '../../core/services/http-error-message';
 import { QueueService } from '../../core/services/queue.service';
 
@@ -33,8 +33,16 @@ export class QueueList {
   /** Read out by screen readers after a move. */
   protected readonly announcement = signal('');
 
+  /** When the queue was last loaded; the waiting times are counted from here. */
+  protected readonly now = signal(new Date());
+
   protected readonly areaLabel = areaLabel;
+  protected readonly durationLabel = durationLabel;
+  protected readonly symptomLabels = symptomLabels;
   protected readonly scoreLevel = scoreLevel;
+  protected readonly urgencyLabel = urgencyLabel;
+  protected readonly waitingLabel = waitingLabel;
+  protected readonly firstLine = firstLine;
 
   constructor() {
     this.load();
@@ -59,7 +67,8 @@ export class QueueList {
       .subscribe({
         next: (items) => {
           this.items.set(items);
-          this.lastUpdated.set(new Date());
+          this.now.set(new Date());
+          this.lastUpdated.set(this.now());
           this.errorMessage.set(null);
         },
         error: (error) => this.errorMessage.set(httpErrorMessage(error)),
