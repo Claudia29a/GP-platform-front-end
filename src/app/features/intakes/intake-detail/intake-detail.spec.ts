@@ -23,7 +23,7 @@ describe('[component] IntakeDetail', () => {
     getAccessLog = vi.fn().mockReturnValue(of([{ staffName: 'Sam Bakker', role: 'GP_ASSISTANT', viewedAt: '2026-11-11T10:00:00Z' }]));
     replies = {
       getReplies: vi.fn().mockReturnValue(of([])),
-      reply: vi.fn().mockReturnValue(of({ id: 'reply-1', questionId: 'question-1', authorName: 'Dr. Jansen', text: 'Use the cream.', createdAt: '2026-11-17T10:00:00Z' })),
+      reply: vi.fn().mockReturnValue(of({ id: 'reply-1', questionId: 'question-1', authorName: 'Dr. Jansen', text: 'Use the cream.', createdAt: '2026-11-17T10:00:00Z', appointment: false })),
     };
     const current = signal(user);
     await TestBed.configureTestingModule({
@@ -182,7 +182,7 @@ describe('[component] IntakeDetail', () => {
 
       await write(page, '  Use the cream. ');
 
-      expect(replies.reply).toHaveBeenCalledWith('question-1', 'Use the cream.');
+      expect(replies.reply).toHaveBeenCalledWith('question-1', 'Use the cream.', false);
       expect(page.querySelector('.replies')?.textContent).toContain('Use the cream.');
       expect(page.querySelector('[role=status]')?.textContent).toContain('The patient gets an email');
     });
@@ -205,10 +205,50 @@ describe('[component] IntakeDetail', () => {
       expect(page.querySelector('[role=alert]')?.textContent).toContain('cannot be reached');
     });
 
+    it('User story nr 9 AC1: the GP can invite the patient to make an appointment; it is off at first', async () => {
+      const page = await render(GP, testIntake());
+      const invite = page.querySelector<HTMLInputElement>('#reply-appointment')!;
+
+      expect(invite.checked).toBe(false);
+      expect(page.querySelector('label[for=reply-appointment]')?.textContent).toContain('Invite the patient to make an appointment');
+
+      invite.click();
+      await write(page, 'Please come in.');
+
+      expect(replies.reply).toHaveBeenCalledWith('question-1', 'Please come in.', true);
+      expect(page.querySelector<HTMLInputElement>('#reply-appointment')!.checked).toBe(false);
+    });
+
+    it('User story nr 9 AC4: the patient sees the invitation with a button to the booking page under that reply', async () => {
+      const page = await render2(
+        PATIENT,
+        vi.fn().mockReturnValue(
+          of([
+            { id: 'reply-1', questionId: 'question-1', authorName: 'Dr. Jansen', text: 'Use the cream.', createdAt: '2026-11-17T10:00:00Z', appointment: false },
+            {
+              id: 'reply-2',
+              questionId: 'question-1',
+              authorName: 'Dr. Jansen',
+              text: 'Please come in.',
+              createdAt: '2026-11-18T10:00:00Z',
+              appointment: true,
+              appointmentUrl: 'https://practice.example/book',
+            },
+          ]),
+        ),
+      );
+      const [first, second] = Array.from(page.querySelectorAll('.reply'));
+
+      expect(first.querySelector('.appointment')).toBeNull();
+      expect(second.querySelector('.appointment')?.textContent).toContain('The practice asks you to make an appointment');
+      expect(second.querySelector<HTMLAnchorElement>('.appointment a')?.href).toBe('https://practice.example/book');
+      expect(second.querySelector('.appointment a')?.textContent).toContain('Make an appointment');
+    });
+
     async function renderWithReplies(user: CurrentUser): Promise<HTMLElement> {
       const page = await render(user, testIntake());
       replies.getReplies.mockReturnValue(
-        of([{ id: 'reply-1', questionId: 'question-1', authorName: 'Dr. Jansen', text: 'Use the cream twice a day.', createdAt: '2026-11-17T10:00:00Z' }]),
+        of([{ id: 'reply-1', questionId: 'question-1', authorName: 'Dr. Jansen', text: 'Use the cream twice a day.', createdAt: '2026-11-17T10:00:00Z', appointment: false }]),
       );
       TestBed.resetTestingModule();
       return render2(user, replies.getReplies);

@@ -153,3 +153,24 @@ h2 {
     padding-top: 0;
   }
 }
+
+/* User story nr 9: the invitation under a reply, and the tick box above the Send button. */
+.appointment {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-top: 0.6rem !important;
+  font-weight: 600;
+
+  .button {
+    font-weight: 600;
+  }
+}
+
+.invite {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}

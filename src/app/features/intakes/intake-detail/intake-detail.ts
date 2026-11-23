@@ -48,7 +48,10 @@ export class IntakeDetail implements OnInit {
   protected readonly replies = signal<Reply[]>([]);
   /** Only the GP answers questions; the Messaging Service checks the same. */
   protected readonly canReply = computed(() => this.auth.user()?.role === 'GP');
-  protected readonly replyText = inject(NonNullableFormBuilder).control('');
+  private readonly formBuilder = inject(NonNullableFormBuilder);
+  protected readonly replyText = this.formBuilder.control('');
+  /** User story nr 9: invite the patient to make an appointment; off by default. */
+  protected readonly inviteToAppointment = this.formBuilder.control(false);
   protected readonly replyError = signal<string | null>(null);
   protected readonly replyMessage = signal<string | null>(null);
   protected readonly replyFailure = signal<string | null>(null);
@@ -87,12 +90,13 @@ export class IntakeDetail implements OnInit {
     this.replyError.set(null);
     this.sending.set(true);
     this.replyService
-      .reply(this.id(), text)
+      .reply(this.id(), text, this.inviteToAppointment.value)
       .pipe(finalize(() => this.sending.set(false)))
       .subscribe({
         next: (reply) => {
           this.replies.update((replies) => [...replies, reply]);
           this.replyText.reset();
+          this.inviteToAppointment.reset();
           this.replyMessage.set('Your reply was sent. The patient gets an email to sign in and read it.');
         },
         error: (error) => this.replyFailure.set(httpErrorMessage(error)),
