@@ -22,7 +22,7 @@ describe('[component] MyDataPage', () => {
       { question: testIntake(), openedBy: [{ staffName: 'Dr. Jansen', role: 'GP', viewedAt: '2026-11-11T11:00:00Z' }] },
       { question: testIntake({ id: 'question-2', description: 'Cough' }), openedBy: [] },
     ],
-    replies: [{ id: 'reply-1', questionId: testIntake().id, authorName: 'Dr. Jansen', text: 'Please use the cream twice a day.', createdAt: '2026-11-17T10:00:00Z' }],
+    replies: [{ id: 'reply-1', questionId: testIntake().id, authorName: 'Dr. Jansen', text: 'Please use the cream twice a day.', createdAt: '2026-11-17T10:00:00Z', appointment: false }],
   };
 
   async function render(result: MyData | HttpErrorResponse = data) {
@@ -57,6 +57,12 @@ describe('[component] MyDataPage', () => {
     expect(page.textContent).toContain('Nobody at the practice has opened this question yet.');
     expect(page.querySelector('.my-reply')?.textContent).toContain('Please use the cream twice a day.');
     expect(page.querySelectorAll('.my-reply')).toHaveLength(1);
+  });
+
+  it('User story nr 9 TAC1: shows when the practice asked for an appointment', async () => {
+    await render({ ...data, replies: [{ ...data.replies[0], appointment: true, appointmentUrl: 'https://practice.example/book' }] });
+
+    expect(page.querySelector('.my-reply')?.textContent).toContain('The practice asked you to make an appointment.');
   });
 
   it('explains when the data cannot be loaded', async () => {
