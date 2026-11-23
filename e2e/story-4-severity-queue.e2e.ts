@@ -23,6 +23,11 @@ async function moveAbove(page: Page, name: string, other: string): Promise<void>
     .toEqual([name, other]);
 }
 
+/** The queue item whose question is exactly this text (the urgency word "High" must not match the question "High"). */
+function itemAsking(page: import('@playwright/test').Page, question: string) {
+  return page.locator('.queue-item').filter({ has: page.locator('[data-pattern=question]', { hasText: new RegExp(`^${question}$`) }) });
+}
+
 test.describe('[e2e] Story 4: severity queue', () => {
   test('Story 4 AC1 AC2: the queue shows the highest score first, with each score', async ({ browser, page, request }) => {
     await signInAsNewPatient(page, request);
@@ -34,9 +39,9 @@ test.describe('[e2e] Story 4: severity queue', () => {
     await signInAsStaff(staff, request, GP_EMAIL);
 
     await expect.poll(() => queueOrder(staff, ['Low', 'Middle', 'High'])).toEqual(['High', 'Middle', 'Low']);
-    await expect(staff.locator('.queue-item', { hasText: 'High' }).locator('.score')).toHaveText('Score 86');
-    await expect(staff.locator('.queue-item', { hasText: 'Middle' }).locator('.score')).toHaveText('Score 59');
-    await expect(staff.locator('.queue-item', { hasText: 'Low' }).locator('.score')).toHaveText('Score 12');
+    await expect(itemAsking(staff, 'High').locator('.score')).toHaveText('Score 86');
+    await expect(itemAsking(staff, 'Middle').locator('.score')).toHaveText('Score 59');
+    await expect(itemAsking(staff, 'Low').locator('.score')).toHaveText('Score 12');
   });
 
   test('Story 4 AC3: staff change the order with the arrows and it stays after a reload', async ({ browser, page, request }) => {
