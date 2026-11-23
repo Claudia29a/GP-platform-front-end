@@ -171,7 +171,8 @@ locally with the same half CPU and 1 GB as on Azure (`Started … in … seconds
 | Intake Service | 17.2 s | 8.9 s | 4.3 s |
 
 A sign-in stays as fast with the quick compiler only (median 0.11 s in both cases). On Azure, before the change, the
-first sign-in right after starting took 26.8 s.
+first sign-in right after starting took 26.8 s; after the change it takes 5.6 s. The start-up itself went from
+27–29 s to 7.3–7.9 s.
 
 | Criterion | Proof |
 | --- | --- |
