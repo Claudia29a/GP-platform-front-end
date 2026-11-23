@@ -214,3 +214,22 @@ Service with its own database (SAD v2).
 | TAC3 a failed email does not lose the reply | `unit` ReplyNotifierTest |
 | AC5 a patient who deletes their account also deletes the replies; My data shows and downloads them | `e2e` Story 12 TAC4 · `component` my-data.spec · `unit` my-data.service.spec, ReplyServiceTest · `api` MyRepliesControllerTest, MyDataControllerTest |
 | TAC4 replies are deleted with their question: with the account, and 6 months after the question was sent | `e2e` Story 12 TAC4 · `unit` ReplyCleanerTest · `integration` ReplyRepositoryTest |
+
+## User story nr 8: the GP view
+
+From here on, story numbers follow the User Story document, and every commit starts with `user story nr <n>`.
+Risk class A (BDTM): damage high, because a GP could miss an important detail; chance medium. Test types were
+chosen with the story, before the code was written. No warning signs are shown: CareBridge does not decide what is
+medically alarming, the urgency comes from the existing score.
+
+| Criterion | Proof |
+| --- | --- |
+| AC1 the queue shows every question in the same fixed pattern, with only the first line of the question | `e2e` User story 8 AC1 · `component` queue-list.spec · `unit` queue.model.spec |
+| AC2 staff see a summary at the top of the question page, then the question and the reply box | `e2e` User story 8 AC2 AC3, User story 8 AC2 · `component` intake-detail.spec |
+| AC3 the other details are folded under "Full details" and open with a click or the keyboard | `e2e` User story 8 AC2 AC3 · `component` intake-detail.spec |
+| AC4 nothing is lost; staff can still reach every answer | `component` intake-detail.spec · `e2e` Story 3 AC1 AC2 AC6 |
+| AC5 the patient's page stays the same | `e2e` User story 8 AC5 · `component` intake-detail.spec |
+| TAC1 `GET /queue` also returns the ticked symptoms, in form order; still staff only | `api` QueueControllerTest · `integration` QueueSymptomsIntegrationTest |
+| TAC2 the folded part is the browser's own details element, so keyboard and screen readers work | `e2e` User story 8 AC2 AC3 · `component` intake-detail.spec |
+| TAC3 the summary uses the existing answer labels | `unit` queue.model.spec · `component` queue-list.spec |
+| TAC4 opening the page is still logged once | `unit` IntakeServiceTest · `e2e` Story 8 AC4 AC5 AC6 (the older "my data and the access log" story); the page only changed its layout |

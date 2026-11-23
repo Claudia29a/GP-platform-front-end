@@ -15,8 +15,8 @@
   </header>
 
   <p class="score-help">
-    The <strong>score</strong> (0–100) is a sorting suggestion calculated from the patient's answers. It is not a
-    diagnosis, and your order always wins.
+    The <strong>urgency</strong> and <strong>score</strong> (0–100) are a sorting suggestion calculated from the
+    patient's answers. They are not a diagnosis, and your order always wins.
   </p>
 
   @if (notice(); as message) {
@@ -43,17 +43,29 @@
 
           <span class="position">{{ i + 1 }}</span>
 
+          <!-- User story 8: every question shows the same facts in the same order (the fixed pattern). -->
           <a class="summary" [routerLink]="['/questions', item.id]">
             <span class="top-line">
-              <span class="patient">{{ item.patientName }}</span>
-              <span [class]="'score ' + scoreLevel(item.severityScore)">Score {{ item.severityScore }}</span>
+              <span data-pattern="urgency" [class]="'urgency ' + scoreLevel(item.severityScore)">
+                <span class="urgency-word">{{ urgencyLabel(item.severityScore) }}</span>
+                <span class="score">Score {{ item.severityScore }}</span>
+              </span>
+              <span data-pattern="patient" class="patient">{{ item.patientName }}</span>
+              <span data-pattern="waiting" class="waiting">{{ waitingLabel(item.submittedAt, now()) }}</span>
             </span>
-            <span class="description">{{ item.description }}</span>
-            <span class="meta">
-              <span>{{ areaLabel(item) }}</span>
-              <span>Bothers {{ item.severity }}/10</span>
-              <time [attr.datetime]="item.submittedAt">{{ item.submittedAt | date: 'd MMM, HH:mm' }}</time>
+            <span class="facts">
+              <span data-pattern="where">{{ areaLabel(item) }}</span>
+              <span data-pattern="how-long">{{ durationLabel(item.duration) }}</span>
+              <span data-pattern="bothers">Bothers {{ item.severity }}/10</span>
             </span>
+            <span data-pattern="symptoms" class="symptoms">
+              @for (symptom of symptomLabels({ symptoms: item.symptoms, symptomsOther: null }); track symptom) {
+                <span class="tag">{{ symptom }}</span>
+              } @empty {
+                <span class="none">No symptoms ticked</span>
+              }
+            </span>
+            <span data-pattern="question" class="description">{{ firstLine(item.description) }}</span>
           </a>
 
           <span class="arrows">

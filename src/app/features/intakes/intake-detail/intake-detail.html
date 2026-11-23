@@ -10,103 +10,172 @@
   } @else if (errorMessage(); as message) {
     <p class="alert" role="alert">{{ message }}</p>
   } @else if (intake(); as intake) {
-    <h1>Question</h1>
-    <dl>
-      @if (isStaff()) {
+    @if (isStaff()) {
+      <!-- User story 8: the fixed pattern first, the full details folded underneath. -->
+      <h1>Question from {{ intake.patientName }}</h1>
+      <dl class="summary" aria-label="Summary">
         <dt>Patient</dt>
-        <dd>{{ intake.patientName }} <span class="email">({{ intake.patientEmail }})</span></dd>
-      }
-      <dt>Status</dt>
-      <dd><span class="badge">{{ statusLabels[intake.status] }}</span></dd>
-      <dt>Submitted</dt>
-      <dd>
-        <time [attr.datetime]="intake.submittedAt">{{ intake.submittedAt | date: 'EEEE d MMMM y, HH:mm' }}</time>
-      </dd>
-    </dl>
+        <dd data-pattern="patient">{{ intake.patientName }}</dd>
+        <dt>Waiting</dt>
+        <dd data-pattern="waiting">{{ waitingTime(intake.submittedAt, now) }}</dd>
+        <dt>Where</dt>
+        <dd data-pattern="where">{{ areaLabel(intake) }}</dd>
+        <dt>How long</dt>
+        <dd data-pattern="how-long">{{ durationLabel(intake.duration) }}</dd>
+        <dt>How much it bothers</dt>
+        <dd data-pattern="bothers">{{ intake.severity }}/10</dd>
+        <dt>Symptoms</dt>
+        <dd data-pattern="symptoms">
+          @for (symptom of symptomLabels({ symptoms: intake.symptoms, symptomsOther: null }); track symptom) {
+            <span class="tag">{{ symptom }}</span>
+          } @empty {
+            <span class="none">None ticked</span>
+          }
+        </dd>
+      </dl>
 
-    <h2>The problem</h2>
-    <dl>
-      <dt>Where</dt>
-      <dd>{{ areaLabel(intake) }}</dd>
-      <dt>How long</dt>
-      <dd>{{ durationLabel(intake.duration) }}</dd>
-      <dt>How much it bothers</dt>
-      <dd>
-        <span class="severity" [attr.aria-label]="intake.severity + ' out of 10'">
-          <span class="severity-bar" aria-hidden="true"><span [style.width.%]="intake.severity * 10"></span></span>
-          {{ intake.severity }} / 10
-        </span>
-      </dd>
-      <dt>Symptoms</dt>
-      <dd>
-        @for (symptom of symptomLabels(intake); track symptom) {
-          <span class="tag">{{ symptom }}</span>
-        } @empty {
-          <span class="none">None ticked</span>
-        }
-      </dd>
-    </dl>
+      <h2>The question</h2>
+      <p class="description">{{ intake.description }}</p>
 
-    <h2>Medication and treatment</h2>
-    <dl>
-      <dt>Current medication</dt>
-      <dd>
-        @if (intake.takesMedication) {
-          Yes: {{ intake.currentMedication }}
-        } @else {
-          <span class="none">No</span>
-        }
-      </dd>
-      <dt>Already tried</dt>
-      <dd>
-        @if (intake.triedTreatment) {
-          Yes: {{ intake.treatmentTried }}
-        } @else {
-          <span class="none">No</span>
-        }
-      </dd>
-    </dl>
+      <ng-container *ngTemplateOutlet="repliesBlock" />
 
-    <h2>The question</h2>
-    <p class="description">{{ intake.description }}</p>
-
-    <h2>Replies from the practice</h2>
-    <div class="replies">
-      @for (reply of replies(); track reply.id) {
-        <article class="reply">
-          <p class="reply-meta">{{ reply.authorName }}, {{ reply.createdAt | date: 'd MMMM y, HH:mm' }}</p>
-          <p class="reply-text">{{ reply.text }}</p>
-        </article>
-      } @empty {
-        <p class="none">No reply yet.</p>
-      }
-    </div>
-
-    @if (canReply()) {
-      <form class="reply-form" (submit)="$event.preventDefault(); sendReply()" novalidate>
-        <label for="reply-text">Your reply</label>
-        <textarea id="reply-text" rows="5" [formControl]="replyText" [attr.maxlength]="maxReplyLength + 20"
-                  [attr.aria-describedby]="replyError() ? 'reply-error' : null"></textarea>
-        @if (replyError(); as message) {
-          <p id="reply-error" class="error reply-error">{{ message }}</p>
+      <details class="full-details">
+        <summary>Full details</summary>
+        <dl>
+          <dt>Email address</dt>
+          <dd>{{ intake.patientEmail }}</dd>
+          <dt>Status</dt>
+          <dd><span class="badge">{{ statusLabels[intake.status] }}</span></dd>
+          <dt>Submitted</dt>
+          <dd>
+            <time [attr.datetime]="intake.submittedAt">{{ intake.submittedAt | date: 'EEEE d MMMM y, HH:mm' }}</time>
+          </dd>
+          <dt>Other symptoms</dt>
+          <dd>
+            @if (intake.symptomsOther) {
+              {{ intake.symptomsOther }}
+            } @else {
+              <span class="none">None</span>
+            }
+          </dd>
+          <dt>Current medication</dt>
+          <dd>
+            @if (intake.takesMedication) {
+              Yes: {{ intake.currentMedication }}
+            } @else {
+              <span class="none">No</span>
+            }
+          </dd>
+          <dt>Already tried</dt>
+          <dd>
+            @if (intake.triedTreatment) {
+              Yes: {{ intake.treatmentTried }}
+            } @else {
+              <span class="none">No</span>
+            }
+          </dd>
+        </dl>
+        @if (accessLog(); as log) {
+          <h2>Opened by</h2>
+          <ul class="access-log">
+            @for (entry of log; track $index) {
+              <li>{{ entry.staffName }} ({{ roleLabels[entry.role] }}), {{ entry.viewedAt | date: 'd MMMM y, HH:mm' }}</li>
+            }
+          </ul>
         }
-        <p class="hint">The patient gets an email that there is a reply. The email never contains the reply itself.</p>
-        <button type="submit" class="button" [disabled]="sending()">{{ sending() ? 'Sending…' : 'Send reply' }}</button>
-      </form>
-      @if (replyMessage(); as message) {
-        <p class="info" role="status">{{ message }}</p>
-      }
-      @if (replyFailure(); as message) {
-        <p class="alert" role="alert">{{ message }}</p>
-      }
-    }
-    @if (accessLog(); as log) {
-      <h2>Opened by</h2>
-      <ul class="access-log">
-        @for (entry of log; track $index) {
-          <li>{{ entry.staffName }} ({{ roleLabels[entry.role] }}), {{ entry.viewedAt | date: 'd MMMM y, HH:mm' }}</li>
-        }
-      </ul>
+      </details>
+    } @else {
+      <h1>Question</h1>
+      <dl>
+        <dt>Status</dt>
+        <dd><span class="badge">{{ statusLabels[intake.status] }}</span></dd>
+        <dt>Submitted</dt>
+        <dd>
+          <time [attr.datetime]="intake.submittedAt">{{ intake.submittedAt | date: 'EEEE d MMMM y, HH:mm' }}</time>
+        </dd>
+      </dl>
+
+      <h2>The problem</h2>
+      <dl>
+        <dt>Where</dt>
+        <dd>{{ areaLabel(intake) }}</dd>
+        <dt>How long</dt>
+        <dd>{{ durationLabel(intake.duration) }}</dd>
+        <dt>How much it bothers</dt>
+        <dd>
+          <span class="severity" [attr.aria-label]="intake.severity + ' out of 10'">
+            <span class="severity-bar" aria-hidden="true"><span [style.width.%]="intake.severity * 10"></span></span>
+            {{ intake.severity }} / 10
+          </span>
+        </dd>
+        <dt>Symptoms</dt>
+        <dd>
+          @for (symptom of symptomLabels(intake); track symptom) {
+            <span class="tag">{{ symptom }}</span>
+          } @empty {
+            <span class="none">None ticked</span>
+          }
+        </dd>
+      </dl>
+
+      <h2>Medication and treatment</h2>
+      <dl>
+        <dt>Current medication</dt>
+        <dd>
+          @if (intake.takesMedication) {
+            Yes: {{ intake.currentMedication }}
+          } @else {
+            <span class="none">No</span>
+          }
+        </dd>
+        <dt>Already tried</dt>
+        <dd>
+          @if (intake.triedTreatment) {
+            Yes: {{ intake.treatmentTried }}
+          } @else {
+            <span class="none">No</span>
+          }
+        </dd>
+      </dl>
+
+      <h2>The question</h2>
+      <p class="description">{{ intake.description }}</p>
+
+      <ng-container *ngTemplateOutlet="repliesBlock" />
     }
   }
 </section>
+
+<!-- The replies and the GP's reply box, shown in both views. -->
+<ng-template #repliesBlock>
+  <h2>Replies from the practice</h2>
+  <div class="replies">
+    @for (reply of replies(); track reply.id) {
+      <article class="reply">
+        <p class="reply-meta">{{ reply.authorName }}, {{ reply.createdAt | date: 'd MMMM y, HH:mm' }}</p>
+        <p class="reply-text">{{ reply.text }}</p>
+      </article>
+    } @empty {
+      <p class="none">No reply yet.</p>
+    }
+  </div>
+
+  @if (canReply()) {
+    <form class="reply-form" (submit)="$event.preventDefault(); sendReply()" novalidate>
+      <label for="reply-text">Your reply</label>
+      <textarea id="reply-text" rows="5" [formControl]="replyText" [attr.maxlength]="maxReplyLength + 20"
+                [attr.aria-describedby]="replyError() ? 'reply-error' : null"></textarea>
+      @if (replyError(); as message) {
+        <p id="reply-error" class="error reply-error">{{ message }}</p>
+      }
+      <p class="hint">The patient gets an email that there is a reply. The email never contains the reply itself.</p>
+      <button type="submit" class="button" [disabled]="sending()">{{ sending() ? 'Sending…' : 'Send reply' }}</button>
+    </form>
+    @if (replyMessage(); as message) {
+      <p class="info" role="status">{{ message }}</p>
+    }
+    @if (replyFailure(); as message) {
+      <p class="alert" role="alert">{{ message }}</p>
+    }
+  }
+</ng-template>

@@ -94,8 +94,18 @@
   font-weight: 600;
 }
 
-.score {
-  padding: 0.05rem 0.55rem;
+.waiting {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* The urgency word and the score sit together in one coloured pill. */
+.urgency {
+  display: inline-flex;
+  gap: 0.4rem;
+  padding: 0.05rem 0.6rem;
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 700;
@@ -116,18 +126,42 @@
   }
 }
 
-.description {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.score {
+  font-weight: 400;
 }
 
-.meta {
+.facts {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem 0.9rem;
+  font-size: 0.9rem;
+}
+
+.symptoms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.tag {
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  background: var(--primary-tint);
+  border: 1px solid var(--primary-soft);
+  font-size: 0.8rem;
+}
+
+.none {
   font-size: 0.85rem;
   color: var(--muted);
+}
+
+.description {
+  color: var(--muted);
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .arrows {

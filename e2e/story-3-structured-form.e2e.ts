@@ -64,7 +64,8 @@ test.describe('[e2e] Story 3: structured question form', () => {
     const staff = await (await browser.newContext()).newPage();
     await signInAsStaff(staff, request, GP_EMAIL);
     await staff.goto(url);
-    for (const text of expected) {
+    // User story 8: staff see the bother score in the summary pattern as "7/10".
+    for (const text of expected.map((text) => (text === '7 / 10' ? '7/10' : text))) {
       await expect(staff.locator('section.card')).toContainText(text);
     }
   });

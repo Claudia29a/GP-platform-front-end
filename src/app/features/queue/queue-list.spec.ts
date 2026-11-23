@@ -17,7 +17,8 @@ function item(id: string, position: number, score: number, patientName = `Patien
     complaintAreaOther: null,
     duration: 'ONE_TO_FOUR_WEEKS',
     severity: 4,
-    description: `Question ${id}`,
+    symptoms: ['SWELLING', 'RASH_ITCHING'],
+    description: `Question ${id}\nSecond line ${id}`,
     submittedAt: '2026-10-14T09:00:00Z',
   };
 }
@@ -57,12 +58,43 @@ describe('[component] QueueList', () => {
     await fixture.whenStable();
   }
 
-  it('shows the queue in order with each score', async () => {
+  it('shows the queue in order with each urgency and score', async () => {
     await create();
 
     expect(patients()).toEqual(['Anna', 'Bram', 'Cem']);
-    expect(element.querySelector('.score')?.textContent).toContain('Score 80');
-    expect(element.querySelector('.score')?.classList).toContain('high');
+    expect(element.querySelector('.urgency')?.textContent).toContain('High');
+    expect(element.querySelector('.urgency')?.textContent).toContain('80');
+    expect(element.querySelector('.urgency')?.classList).toContain('high');
+  });
+
+  it('User story 8 AC1: shows every question in the same fixed pattern', async () => {
+    await create();
+    const first = element.querySelector('.queue-item')!;
+    const parts = Array.from(first.querySelectorAll('[data-pattern]'), (el) => el.getAttribute('data-pattern'));
+
+    expect(parts).toEqual(['urgency', 'patient', 'waiting', 'where', 'how-long', 'bothers', 'symptoms', 'question']);
+    expect(first.querySelector('[data-pattern=where]')?.textContent).toContain('Skin');
+    expect(first.querySelector('[data-pattern=how-long]')?.textContent).toContain('1–4 weeks');
+    expect(first.querySelector('[data-pattern=bothers]')?.textContent).toContain('Bothers 4/10');
+    expect(Array.from(first.querySelectorAll('[data-pattern=symptoms] .tag'), (el) => el.textContent?.trim())).toEqual([
+      'Swelling',
+      'Rash or itching',
+    ]);
+    expect(first.querySelector('[data-pattern=waiting]')?.textContent).toMatch(/Waiting \d+ days?/);
+  });
+
+  it('User story 8 AC1: shows only the first line of the question', async () => {
+    await create();
+    const question = element.querySelector('.queue-item [data-pattern=question]')!;
+
+    expect(question.textContent?.trim()).toBe('Question a');
+  });
+
+  it('User story 8 AC1: says so when no symptoms were ticked', async () => {
+    queueService.getQueue.mockReturnValue(of([{ ...queue[0], symptoms: [] }]));
+    await create();
+
+    expect(element.querySelector('[data-pattern=symptoms]')?.textContent).toContain('No symptoms ticked');
   });
 
   it('moves a question down and saves the new order', async () => {
