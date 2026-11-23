@@ -63,7 +63,8 @@ describe('[component] App (top bar)', () => {
   it('shows practice staff the queue', async () => {
     const page = await render(GP);
 
-    expect(menu(page)).toEqual(['Queue', 'All questions']);
+    // User story nr 10: staff also see the appointments.
+    expect(menu(page)).toEqual(['Queue', 'All questions', 'Appointments']);
     expect(page.querySelector('.role')?.textContent).toContain('GP');
   });
 

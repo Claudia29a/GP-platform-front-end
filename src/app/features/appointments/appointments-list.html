@@ -1,0 +1,29 @@
+<section class="card">
+  <h1>Appointments</h1>
+
+  <label for="appointments-day">Day</label>
+  <input
+    id="appointments-day"
+    type="date"
+    [value]="day()"
+    (change)="show($any($event.target).value)"
+  />
+
+  @if (errorMessage(); as message) {
+    <p class="alert" role="alert">{{ message }}</p>
+  }
+
+  @if (list(); as list) {
+    <ul class="appointments">
+      @for (appointment of list; track appointment.id) {
+        <li class="appointment">
+          <span class="time">{{ appointment.time }}</span>
+          <span class="patient">{{ appointment.patientName }}</span>
+          <a [routerLink]="['/questions', appointment.questionId]">Open question</a>
+        </li>
+      } @empty {
+        <li class="none">No appointments on this day.</li>
+      }
+    </ul>
+  }
+</section>
