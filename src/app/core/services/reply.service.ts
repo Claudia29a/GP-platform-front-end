@@ -14,7 +14,8 @@ export class ReplyService {
     return this.http.get<Reply[]>(`${environment.messagingApiUrl}/questions/${questionId}/replies`);
   }
 
-  reply(questionId: string, text: string): Observable<Reply> {
-    return this.http.post<Reply>(`${environment.messagingApiUrl}/questions/${questionId}/replies`, { text });
+  /** The GP only says whether to invite the patient; the booking link comes from the Messaging Service's settings. */
+  reply(questionId: string, text: string, appointment: boolean): Observable<Reply> {
+    return this.http.post<Reply>(`${environment.messagingApiUrl}/questions/${questionId}/replies`, { text, appointment });
   }
 }
