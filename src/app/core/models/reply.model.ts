@@ -1,3 +1,5 @@
+import { Appointment } from './appointment.model';
+
 /** The GP's reply to a question, from the Messaging Service. */
 export interface Reply {
   id: string;
@@ -9,6 +11,8 @@ export interface Reply {
   appointment: boolean;
   /** The practice's booking page, from the Messaging Service's settings; only when {@link appointment} is true. */
   appointmentUrl?: string | null;
+  /** User story nr 10: the appointment the patient booked for this invitation. */
+  booked?: Appointment | null;
 }
 
 export const MAX_REPLY_LENGTH = 2000;
